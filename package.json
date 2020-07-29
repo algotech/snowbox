@@ -1,0 +1,29 @@
+{
+  "name": "snowbox",
+  "version": "1.0.0",
+  "description": "Use snowbox for a quick start with redux",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lgnstn/snowbox.git"
+  },
+  "keywords": [
+    "snowbox",
+    "react",
+    "redux"
+  ],
+  "author": "Login Anca",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lgnstn/snowbox/issues"
+  },
+  "homepage": "https://github.com/lgnstn/snowbox#readme",
+  "dependencies": {
+    "normalizr": "^3.6.0",
+    "redux": "^4.0.5",
+    "reselect": "^4.0.0"
+  }
+}
