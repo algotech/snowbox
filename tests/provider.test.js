@@ -2,10 +2,10 @@ import api from '../src/api';
 import Provider from '../src/provider';
 
 jest.mock('../src/api', () => ({
-    get: jest.fn((path, params) => 'get'),
-    post: jest.fn((path, data) => 'post'),
-    put: jest.fn((path, data) => 'put'),
-    remove: jest.fn(path => 'remove'),
+  get: jest.fn((path, params) => 'get'),
+  post: jest.fn((path, data) => 'post'),
+  put: jest.fn((path, data) => 'put'),
+  remove: jest.fn(path => 'remove'),
 }));
 
 describe('provider', () => {
