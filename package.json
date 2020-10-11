@@ -4,7 +4,7 @@
   "description": "Use snowbox for a quick start with redux",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -25,5 +25,11 @@
     "normalizr": "^3.6.0",
     "redux": "^4.0.5",
     "reselect": "^4.0.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.11.6",
+    "@babel/preset-env": "^7.11.5",
+    "babel-jest": "^26.5.2",
+    "jest": "^26.5.2"
   }
 }
