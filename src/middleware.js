@@ -1,24 +1,22 @@
 import { normalize } from 'normalizr';
 
 import { actions } from './constants';
-import navService from 'app/core/services/navService';
-
-const snowActions = [
-  actions.UPSERT,
-  actions.REMOVE,
-  actions.FIND,
-  actions.FETCH,
-];
 
 const methods = {
   [actions.UPSERT]: 'upsert',
   [actions.REMOVE]: 'remove',
-  [actions.FIND]: 'fetch',
+  [actions.FIND]: 'find',
   [actions.FETCH]: 'fetch',
 };
 
 export const snowboxMiddleware = store => next => async action => {
-  if (!snowActions.includes(action.type)) {
+  if (![
+      actions.UPSERT,
+      actions.REMOVE,
+      actions.FIND,
+      actions.FETCH,
+    ].includes(action.type)
+  ) {
     return next(action);
   }
 
@@ -40,12 +38,6 @@ export const snowboxMiddleware = store => next => async action => {
 
     return next(action.success(action.data, entities, result));
   } catch (error) {
-    console.log('[Snowbox Middleware] ERR', error);
-
-    if (error.status == 401) {
-      navService.navigate('AuthLoading');
-    }
-
-    return next(action.failure(action.data, error));
+    return next(action.failure(action.data, error, error.status));
   }
 };

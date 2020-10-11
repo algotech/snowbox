@@ -14,8 +14,8 @@ export const createSuccess = type => entity => (data, entities, result) => ({
   type: success(type), entity, data, entities, result
 });
 
-export const createFailure = type => entity => (data, error) => ({
-  type: failure(type), entity, data, error,
+export const createFailure = type => entity => (data, error, statusCode) => ({
+  type: failure(type), entity, data, error, statusCode
 });
 
 export const request = type => entity => data => ({

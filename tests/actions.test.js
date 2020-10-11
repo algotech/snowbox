@@ -77,11 +77,12 @@ describe('actions', () => {
 
   describe('createFailure', () => {
     it('create a failure action for normalized data', () => {
-      expect(createFailure('TYPE')('e')('d', 'err')).toStrictEqual({
+      expect(createFailure('TYPE')('e')('d', 'err', 's')).toStrictEqual({
         type: 'TYPE_FAILURE',
         entity: 'e',
         data: 'd',
         error: 'err',
+        statusCode: 's',
       });
     });
   });
@@ -102,11 +103,12 @@ describe('actions', () => {
         entities: 'b',
         result: 'c',
       });
-      expect(action.failure('a', 'b')).toStrictEqual({
+      expect(action.failure('a', 'b', 's')).toStrictEqual({
         type: 'TYPE_FAILURE',
         entity: 'e',
         data: 'a',
         error: 'b',
+        statusCode: 's',
       });
     });
   });
