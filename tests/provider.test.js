@@ -1,0 +1,49 @@
+import api from '../src/api';
+import Provider from '../src/provider';
+
+jest.mock('../src/api', () => ({
+    get: jest.fn((path, params) => 'get'),
+    post: jest.fn((path, data) => 'post'),
+    put: jest.fn((path, data) => 'put'),
+    remove: jest.fn(path => 'remove'),
+}));
+
+describe('provider', () => {
+  beforeEach(() => {
+    api.get.mockClear();
+    api.post.mockClear();
+    api.put.mockClear();
+    api.remove.mockClear();
+  });
+
+  it('accepts string particles', () => {
+    const provider = new Provider('test');
+
+    expect(provider.getParticle()).toBe('test');
+  });
+
+  it('accepts function particles', () => {
+    const provider = new Provider(data => data);
+
+    expect(provider.getParticle('yes')).toBe('yes');
+  });
+
+  describe.each([
+    ['fetch', 'no params', undefined, 'get', 1, ['/test', undefined]],
+    ['fetch', 'id', 13, 'get', 2, ['/test/13']],
+    ['fetch', 'params', { path: 'ok' }, 'get', 3, ['/test/ok', { path: 'ok' }]],
+    ['upsert', 'no id', { a: 3 }, 'post', 1, ['/test', { a: 3 }]],
+    ['upsert', 'id', { id: 7, a: 3 }, 'put', 1, ['/test/7', { id: 7, a: 3 }]],
+    ['remove', 'number', 5, 'remove', 1, ['/test/5']],
+    ['remove', 'obj', { id: 9 }, 'remove', 2, ['/test/9']],
+  ])('call %s with %s', (method, desc, param, expected, cnt, calls) => {
+    const provider = new Provider(data => {
+      return data && data.path ? `test/${data.path}` : 'test';
+    });
+    const result = provider[method](param);
+
+    expect(result).toBe(expected);
+    expect(api[expected].mock.calls.length).toBe(cnt);
+    expect(api[expected].mock.calls[cnt - 1]).toEqual(calls);
+  });
+});

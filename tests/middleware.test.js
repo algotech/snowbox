@@ -19,7 +19,6 @@ const getEntity = success => ({
   provider: {
     upsert: mockRequest(success),
     remove: mockRequest(success),
-    find: mockRequest(success),
     fetch: mockRequest(success),
   },
 });
@@ -39,6 +38,11 @@ describe('middleware', () => {
     normalize.mockImplementation(
       (data, entity) => ({ entities: 1, result: 2 })
     );
+  });
+
+  afterAll(() => {
+    normalize.mockRestore();
+    jest.unmock('normalizr');
   });
 
   beforeEach(() => {
@@ -65,9 +69,10 @@ describe('middleware', () => {
       const provider = type == 'fetch' ?
         action.entity[0].provider :
         action.entity.provider;
+      const method = type == 'find' ? 'fetch' : type;
 
-      expect(provider[type].mock.calls.length).toBe(1);
-      expect(provider[type].mock.calls[0][0]).toBe(action.data);
+      expect(provider[method].mock.calls.length).toBe(1);
+      expect(provider[method].mock.calls[0][0]).toBe(action.data);
       expect(next.mock.calls.length).toBe(2);
       expect(next.mock.calls[0][0]).toStrictEqual(action);
       expect(next.mock.calls[1][0]).toStrictEqual(result);
@@ -90,9 +95,10 @@ describe('middleware', () => {
       const provider = type == 'fetch' ?
         action.entity[0].provider :
         action.entity.provider;
+      const method = type == 'find' ? 'fetch' : type;
 
-      expect(provider[type].mock.calls.length).toBe(1);
-      expect(provider[type].mock.calls[0][0]).toBe(action.data);
+      expect(provider[method].mock.calls.length).toBe(1);
+      expect(provider[method].mock.calls[0][0]).toBe(action.data);
       expect(next.mock.calls.length).toBe(2);
       expect(next.mock.calls[0][0]).toStrictEqual(action);
       expect(next.mock.calls[1][0]).toStrictEqual(result);

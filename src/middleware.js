@@ -5,7 +5,7 @@ import { actions } from './constants';
 const methods = {
   [actions.UPSERT]: 'upsert',
   [actions.REMOVE]: 'remove',
-  [actions.FIND]: 'find',
+  [actions.FIND]: 'fetch',
   [actions.FETCH]: 'fetch',
 };
 
