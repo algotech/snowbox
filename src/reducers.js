@@ -51,10 +51,8 @@ const fetchEntityhMetaReducer = (state = {}, action) => {
     case failure(actions.FETCH):
       return {
         progress: statuses.FAILED,
-        error: actions.error,
+        error: action.error,
       };
-    default:
-      return state;
   }
 };
 
