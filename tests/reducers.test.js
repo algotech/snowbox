@@ -9,7 +9,7 @@ const action = (type, entity, data, entities, result, error, statusCode) => ({
   type, entity, data, entities, result, error, statusCode,
 });
 
-describe.only('reducers', () => {
+describe('reducers', () => {
   it('handles FETCH action', () => {
     const state = snowboxReducer(undefined, action(actions.FETCH, foo));
 
