@@ -27,6 +27,7 @@
     "query-string": "^6.13.5",
     "react": "^17.0.1",
     "redux": "^4.0.5",
+    "redux-thunk": "^2.3.0",
     "reselect": "^4.0.0",
     "validate.js": "^0.13.1"
   },

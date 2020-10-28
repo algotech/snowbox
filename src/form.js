@@ -1,8 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import hoistStatics from 'hoist-non-react-statics'
 import validate from 'validate.js';
 
-const withForm = ({ fieldConstraints, initialValues = {} }) => WrappedComponent => {
+const withForm = ({
+  fields: fieldConstraints,
+  submitForm,
+  initialValues = {},
+}) => WrappedComponent => {
   const fieldList = Object.keys(fieldConstraints);
 
   const buildInitialState = () => {
@@ -10,6 +14,7 @@ const withForm = ({ fieldConstraints, initialValues = {} }) => WrappedComponent 
       valid: true,
       touched: false,
       error: null,
+      submitted: false,
       fields: {},
     };
 
@@ -25,18 +30,26 @@ const withForm = ({ fieldConstraints, initialValues = {} }) => WrappedComponent 
     return state;
   };
 
-  const SnowForm = ({ onSubmit, ...ownProps }) => {
+  const SnowForm = (ownProps) => {
     const [state, setState] = useState(buildInitialState());
+    const firstRender = useRef(true);
 
-    const getData = () => {
+    useEffect(() => {
+      if (firstRender.current) {
+        firstRender.current = false;
+        validateForm(state);
+      }
+    })
+
+    const getData = (formState) => {
       return fieldList.reduce((data, field) => ({
         ...data,
-        [field]: state.fields[field].value,
+        [field]: formState.fields[field].value,
       }), {});
     }
 
     const validateForm = (formState) => {
-      const errors = validate(getData(), constraints);
+      const errors = validate(getData(formState), fieldConstraints);
 
       let isFormValid = true;
 
@@ -65,10 +78,9 @@ const withForm = ({ fieldConstraints, initialValues = {} }) => WrappedComponent 
 
       let newState = {
         ...state,
-        touched: true,
         fields: {
           ...state.fields,
-          [field]: { ...state.fields[field], value, touched: true },
+          [field]: { ...state.fields[field], value },
         }
       };
 
@@ -82,6 +94,7 @@ const withForm = ({ fieldConstraints, initialValues = {} }) => WrappedComponent 
 
       setState({
         ...state,
+        touched: true,
         fields: {
           ...state.fields,
           [field]: { ...state.fields[field], touched: true },
@@ -89,28 +102,56 @@ const withForm = ({ fieldConstraints, initialValues = {} }) => WrappedComponent 
       });
     };
 
-    const onSubmit = () => {
-      const newState = fieldList.reduce((field, newState) => ({
-        ...newState,
+    const setErrors = (errors) => {
+      const newState = fieldList.reduce((acc, field) => ({
+        ...acc,
+        valid: false,
+        submitted: false,
         fields: {
-          ...newState.fields,
-          [field]: { ...newState.fields[field], touched: true },
+          ...acc.fields,
+          [field]: { ...acc.fields[field], error: errors[field], valid: false },
         },
       }), state);
+
+      if (errors._error) {
+        newState.error = errors._error;
+      }
+
+      setState(newState);
+    }
+
+    const onSubmit = () => {
+      const newState = fieldList.reduce((acc, field) => ({
+        ...acc,
+        fields: {
+          ...acc.fields,
+          [field]: { ...acc.fields[field], touched: true },
+        },
+      }), state);
+
+      if (newState.valid) {
+        newState.submitted = true;
+      }
 
       setState(newState);
 
       if (newState.valid) {
-        onSubmit(getData());
+        submitForm(ownProps, getData(newState), setErrors);
       }
     };
 
     return (
       <WrappedComponent {...{
         ...ownProps,
-        form: state,
+        fields: state.fields,
+        form: {
+          valid: state.valid,
+          touched: state.touched,
+          error: state.error,
+        },
         onFieldChange: onChange,
         onFieldBlur: onBlur,
+        onSubmit,
       }} />
     );
   };
