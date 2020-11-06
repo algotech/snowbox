@@ -102,10 +102,10 @@ const withForm = ({
       });
     };
 
-    const setErrors = (errors) => {
+    const setServerErrors = (errors) => {
       const newState = fieldList.reduce((acc, field) => ({
         ...acc,
-        valid: false,
+        valid: acc.valid && !errors[field],
         submitted: false,
         fields: {
           ...acc.fields,
@@ -136,7 +136,7 @@ const withForm = ({
       setState(newState);
 
       if (newState.valid) {
-        submitForm(ownProps, getData(newState), setErrors);
+        submitForm(ownProps, getData(newState), setServerErrors);
       }
     };
 
