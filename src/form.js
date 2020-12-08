@@ -9,7 +9,7 @@ const withForm = ({
 }) => WrappedComponent => {
   const fieldList = Object.keys(fieldConstraints);
 
-  const buildInitialState = () => {
+  const buildInitialState = (propsInitialValues) => {
     const state = {
       valid: true,
       touched: false,
@@ -18,20 +18,27 @@ const withForm = ({
       fields: {},
     };
 
+    let values = initialValues;
+    if (propsInitialValues) {
+      values = propsInitialValues;
+    }
+
     Object.keys(fieldConstraints).forEach(field => {
       state.fields[field] = {
         valid: true,
         touched: false,
         error: null,
-        value: initialValues[field] || null,
+        value: values[field] || null,
       };
     });
 
     return state;
   };
 
-  const SnowForm = (ownProps) => {
-    const [state, setState] = useState(buildInitialState());
+  const SnowForm = (ownProps = {}) => {
+    const [state, setState] = useState(
+      buildInitialState(ownProps.initialValues)
+    );
     const firstRender = useRef(true);
 
     useEffect(() => {
