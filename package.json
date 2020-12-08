@@ -1,6 +1,6 @@
 {
   "name": "snowbox",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Use snowbox for a quick start with redux",
   "main": "index.js",
   "scripts": {
