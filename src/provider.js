@@ -6,21 +6,17 @@ export default class Provider {
   }
 
   fetch(filter) {
-    const particle = this.getParticle(filter);
+    const path = this.getFetchPath(filter);
+    const params = this.getFetchParams(filter);
 
-    if (!filter || typeof filter == 'object') {
-      return api.get(`/${particle}`, filter);
-    }
-
-    return api.get(`/${particle}/${filter}`);
+    return api.get(path, params);
   }
 
   upsert(data) {
-    const particle = this.getParticle(data);
+    const path = this.getUpsertPath(data);
+    const method = this.getUpsertMethod(data);
 
-    return data.id ?
-      api.put(`/${particle}/${data.id}`, data) :
-      api.post(`/${particle}`, data);
+    return api[method](path, data);
   }
 
   remove(data) {
@@ -34,5 +30,27 @@ export default class Provider {
     return typeof this.particleDefinition == 'function' ?
       this.particleDefinition(data) :
       this.particleDefinition;
+  }
+
+  getFetchPath(filter) {
+    const particle = this.getParticle(filter);
+
+    return !filter || typeof filter == 'object' ?
+      `/${particle}` :
+      `/${particle}/${filter}`;
+  }
+
+  getFetchParams(filter) {
+    return typeof filter == 'object' ? filter : null;
+  }
+
+  getUpsertPath(data) {
+    const particle = this.getParticle(data);
+
+    return data.id ? `/${particle}/${data.id}` : `/${particle}`;
+  }
+
+  getUpsertMethod(data) {
+    return data.id ? 'put' : 'post';
   }
 }
