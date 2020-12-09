@@ -51,6 +51,10 @@ class Api {
     return this.call('PUT', path, params, data);
   }
 
+  patch(path, data ={}, params) {
+    return this.call('PATCH', path, params, data);
+  }
+
   remove(path) {
     return this.call('DELETE', path);
   }
