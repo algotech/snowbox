@@ -147,10 +147,20 @@ const withForm = ({
       }
     };
 
+    const fieldsProp = Object.keys(state.fields).reduce((fields, name) => ({
+      ...fields,
+      [name]: {
+        ...state.fields[name],
+        name,
+        onBlur: () => onBlur(name),
+        onChange: (value) => onChange(name, value),
+      },
+    }), {});
+
     return (
       <WrappedComponent {...{
         ...ownProps,
-        fields: state.fields,
+        fields: fieldsProp,
         form: {
           valid: state.valid,
           touched: state.touched,
