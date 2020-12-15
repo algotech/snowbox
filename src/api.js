@@ -117,7 +117,7 @@ class Api {
           }
           break;
         default: {
-          return reject(`[Snowbox] Invalid content type"${contentType}"`);
+          return reject(`[Snowbox] Invalid content type "${contentType}"`);
         }
       }
 
