@@ -1,5 +1,7 @@
 import queryString from 'query-string';
 
+import { contentTypes } from './constants';
+
 class Api {
   setBaseUrl(baseUrl) {
     if (typeof baseUrl != 'string') {
@@ -43,23 +45,23 @@ class Api {
     return this.call('GET', path, params);
   }
 
-  post(path, data = {}, params) {
-    return this.call('POST', path, params, data);
+  post(path, data = {}, params, contentType) {
+    return this.call('POST', path, params, data, contentType);
   }
 
-  put(path, data = {}, params) {
-    return this.call('PUT', path, params, data);
+  put(path, data = {}, params, contentType) {
+    return this.call('PUT', path, params, data, contentType);
   }
 
-  patch(path, data ={}, params) {
-    return this.call('PATCH', path, params, data);
+  patch(path, data = {}, params, contentType) {
+    return this.call('PATCH', path, params, data, contentType);
   }
 
   remove(path) {
     return this.call('DELETE', path);
   }
 
-  async call(method, path, params, data) {
+  async call(method, path, params, data, contentType = contentTypes.JSON) {
     if (!this.baseUrl) {
       throw new Error('[Snowbox] Base API url must be defined');
     }
@@ -95,10 +97,33 @@ class Api {
         }
       };
 
-      xhr.setRequestHeader('Content-type','application/json; charset=utf-8');
+      let body;
+
+      switch (contentType) {
+        case contentTypes.JSON:
+          xhr.setRequestHeader(
+            'Content-type',
+            'application/json; charset=utf-8'
+          );
+          if (data) {
+            body = JSON.stringify(data);
+          }
+          break;
+        case contentTypes.FORM_DATA:
+          xhr.setRequestHeader('Content-type', 'multipart/form-data');
+          if (typeof data == 'object') {
+            body = new FormData();
+            Object.keys(data).forEach(field => body.append(field, data[field]));
+          }
+          break;
+        default: {
+          return reject(`[Snowbox] Invalid content type"${contentType}"`);
+        }
+      }
+
       await this.setAuthToken(xhr);
 
-      xhr.send(data ? JSON.stringify(data) : undefined);
+      xhr.send(data ? body : undefined);
     });
   }
 }

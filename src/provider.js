@@ -1,4 +1,5 @@
 import api from './api';
+import { contentTypes } from './constants';
 
 export default class Provider {
   constructor(particleDefinition) {
@@ -12,11 +13,11 @@ export default class Provider {
     return api.get(path, params);
   }
 
-  upsert(data) {
+  upsert(data, params) {
     const path = this.getUpsertPath(data);
     const method = this.getUpsertMethod(data);
 
-    return api[method](path, data);
+    return api[method](path, data, params, this.getUpsertContentType());
   }
 
   remove(data) {
@@ -52,5 +53,9 @@ export default class Provider {
 
   getUpsertMethod(data) {
     return data.id ? 'put' : 'post';
+  }
+
+  getUpsertContentType() {
+     return contentTypes.JSON;
   }
 }

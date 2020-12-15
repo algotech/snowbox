@@ -12,3 +12,8 @@ export const statuses = {
   SUCCEEDED: 'succeeded',
   FAILED: 'failed',
 };
+
+export const contentTypes = {
+  JSON: `${NAMESPACE}/JSON`,
+  FORM_DATA: `${NAMESPACE}/FORM_DATA`,
+};
