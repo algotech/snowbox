@@ -143,7 +143,7 @@ const withForm = ({
       setState(newState);
 
       if (newState.valid) {
-        submitForm(ownProps, getData(newState), setServerErrors);
+        return submitForm(ownProps, getData(newState), setServerErrors);
       }
     };
 
