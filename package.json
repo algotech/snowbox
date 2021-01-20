@@ -2,8 +2,15 @@
   "name": "snowbox",
   "version": "0.2.9",
   "description": "Use snowbox for a quick start with redux",
-  "main": "index.js",
+  "main": "dist/snowbox.js",
+  "module": "dist/snowbox.js.es",
+  "sideEffects": false,
   "scripts": {
+    "build": "npm run clean && run-p build:*",
+    "build:development": "NODE_ENV=development rollup -c",
+    "build:production": "NODE_ENV=production rollup -c",
+    "clean": "rimraf dist",
+    "prepublish": "npm run build",
     "test": "jest"
   },
   "repository": {
@@ -14,6 +21,11 @@
     "snowbox",
     "react",
     "redux"
+  ],
+  "files": [
+    "dist/",
+    "LICENSE",
+    "README.md"
   ],
   "author": "Login Anca",
   "license": "MIT",
@@ -34,9 +46,16 @@
   "devDependencies": {
     "@babel/core": "^7.11.6",
     "@babel/preset-env": "^7.11.5",
+    "@babel/preset-react": "^7.12.10",
     "babel-jest": "^26.5.2",
     "enzyme": "^3.11.0",
-    "jest": "^26.5.2"
+    "jest": "^26.5.2",
+    "npm-run-all": "^4.1.5",
+    "rimraf": "^3.0.2",
+    "rollup": "^2.37.1",
+    "rollup-plugin-babel": "^4.4.0",
+    "rollup-plugin-filesize": "^9.1.0",
+    "rollup-plugin-terser": "^7.0.2"
   },
   "jest": {
     "collectCoverage": true,

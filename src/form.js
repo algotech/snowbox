@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import hoistStatics from 'hoist-non-react-statics'
+import hoistStatics from 'hoist-non-react-statics';
 import validate from 'validate.js';
 
 const withForm = ({
