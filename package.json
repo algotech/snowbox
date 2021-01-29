@@ -37,7 +37,7 @@
     "hoist-non-react-statics": "^3.3.2",
     "normalizr": "^3.6.0",
     "query-string": "^6.13.5",
-    "react": "^16.13.1",
+    "react": "^17.0.1",
     "redux": "^4.0.5",
     "redux-thunk": "^2.3.0",
     "reselect": "^4.0.0",
