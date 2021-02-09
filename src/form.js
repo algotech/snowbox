@@ -28,7 +28,7 @@ const withForm = ({
         valid: true,
         touched: false,
         error: null,
-        value: values[field] || null,
+        value: typeof values[field] == 'undefined' ? null : values[field],
       };
     });
 
