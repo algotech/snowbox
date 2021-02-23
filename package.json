@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lgnstn/snowbox.git"
+    "url": "git+https://github.com/algotech/snowbox.git"
   },
   "keywords": [
     "snowbox",
@@ -30,9 +30,9 @@
   "author": "Login Anca",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/lgnstn/snowbox/issues"
+    "url": "https://github.com/algotech/snowbox/issues"
   },
-  "homepage": "https://github.com/lgnstn/snowbox#readme",
+  "homepage": "https://github.com/algotech/snowbox#readme",
   "dependencies": {
     "hoist-non-react-statics": "^3.3.2",
     "normalizr": "^3.6.0",
