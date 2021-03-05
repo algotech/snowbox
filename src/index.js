@@ -5,5 +5,5 @@ export { upsert, remove, find, fetch } from './actions';
 export { selectOne, selectMany } from './selectors';
 export { snowboxReducer } from './reducers';
 export { snowboxMiddleware } from './middleware';
-export { default as withForm } from './form';
+export { default as withForm } from './withForm';
 export { contentTypes } from './constants';
