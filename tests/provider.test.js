@@ -1,5 +1,6 @@
 import api from '../src/api';
 import Provider from '../src/provider';
+import { contentTypes } from '../src/constants';
 
 jest.mock('../src/api', () => ({
   get: jest.fn((path, params) => 'get'),
@@ -29,11 +30,21 @@ describe('provider', () => {
   });
 
   describe.each([
-    ['fetch', 'no params', undefined, 'get', 1, ['/test', undefined]],
-    ['fetch', 'id', 13, 'get', 2, ['/test/13']],
+    ['fetch', 'no params', undefined, 'get', 1, ['/test', null]],
+    ['fetch', 'id', 13, 'get', 2, ['/test/13', null]],
     ['fetch', 'params', { path: 'ok' }, 'get', 3, ['/test/ok', { path: 'ok' }]],
-    ['upsert', 'no id', { a: 3 }, 'post', 1, ['/test', { a: 3 }]],
-    ['upsert', 'id', { id: 7, a: 3 }, 'put', 1, ['/test/7', { id: 7, a: 3 }]],
+    ['upsert', 'no id', { a: 3 }, 'post', 1, [
+      '/test',
+      { a: 3 },
+      undefined,
+      contentTypes.JSON,
+    ]],
+    ['upsert', 'id', { id: 7, a: 3 }, 'put', 1, [
+      '/test/7',
+      { id: 7, a: 3 },
+      undefined,
+      contentTypes.JSON,
+    ]],
     ['remove', 'number', 5, 'remove', 1, ['/test/5']],
     ['remove', 'obj', { id: 9 }, 'remove', 2, ['/test/9']],
   ])('call %s with %s', (method, desc, param, expected, cnt, calls) => {

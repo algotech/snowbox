@@ -1,4 +1,5 @@
 import api from '../src/api';
+import { contentTypes } from '../src/constants';
 
 const buildResponse = (success, hasData, hasMessage) => {
   const response = { response: 'obj' };
@@ -233,6 +234,27 @@ describe('api', () => {
       expect(error.message).toEqual({ response: 'obj' });
     });
 
+    it('makes PATCH requests', async () => {
+      const xhr = mockXhr(false, false, false, false);
+      let result, error;
+
+      try {
+        result = await api.patch('/path?ok=da', { d: 1 }, { p: 3 });
+      } catch (err) {
+        error = err;
+      }
+
+      expect(xhr.open.mock.calls.length).toBe(1);
+      expect(xhr.open.mock.calls[0][0]).toBe('PATCH');
+      expect(xhr.open.mock.calls[0][1]).toBe('base/path?ok=da&p=3');
+      expect(xhr.open.mock.calls[0][2]).toBe(true);
+      expect(xhr.setRequestHeader.mock.calls.length).toBe(2);
+      expect(xhr.send.mock.calls.length).toBe(1);
+      expect(xhr.send.mock.calls[0][0]).toBe(JSON.stringify({ d: 1 }));
+      expect(result).toBe(undefined);
+      expect(error.message).toEqual({ response: 'obj' });
+    });
+
     it('makes DELETE requests', async () => {
       const xhr = mockXhr(true, false, false, false);
 
@@ -245,6 +267,29 @@ describe('api', () => {
       expect(xhr.setRequestHeader.mock.calls.length).toBe(2);
       expect(xhr.send.mock.calls.length).toBe(1);
       expect(xhr.send.mock.calls[0][0]).toBe(undefined);
+      expect(result).toStrictEqual({ response: 'obj' });
+    });
+
+    it('makes form data requests', async () => {
+      const xhr = mockXhr(true, true, false, false);
+
+      const result = await api.post(
+        '/path?ok=da',
+        { d: 1 },
+        { p: 3 },
+        contentTypes.FORM_DATA
+      );
+
+      const formDataBody = new FormData();
+      formDataBody.append('d', 1);
+
+      expect(xhr.open.mock.calls.length).toBe(1);
+      expect(xhr.open.mock.calls[0][0]).toBe('POST');
+      expect(xhr.open.mock.calls[0][1]).toBe('base/path?ok=da&p=3');
+      expect(xhr.open.mock.calls[0][2]).toBe(true);
+      expect(xhr.setRequestHeader.mock.calls.length).toBe(2);
+      expect(xhr.send.mock.calls.length).toBe(1);
+      expect(xhr.send.mock.calls[0][0]).toStrictEqual(formDataBody);
       expect(result).toStrictEqual({ response: 'obj' });
     });
   });
