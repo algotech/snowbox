@@ -1,7 +1,7 @@
 import { schema } from 'normalizr';
 
-export const entity = (key, provider, relations = {}, misc = {}) => {
-  const newEntity = new schema.Entity(key, relations);
+export const entity = (key, provider, relations = {}, options = {}) => {
+  const newEntity = new schema.Entity(key, relations, options);
 
   if (provider) {
     if (typeof provider != 'object' &&
@@ -12,8 +12,6 @@ export const entity = (key, provider, relations = {}, misc = {}) => {
 
     newEntity.provider = provider;
   }
-
-  Object.assign(newEntity, misc);
 
   return newEntity;
 };
