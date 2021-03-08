@@ -11,6 +11,7 @@ import {
   remove,
   find,
   fetch,
+  clearAll,
 } from '../src/actions';
 
 describe('actions', () => {
@@ -166,6 +167,16 @@ describe('actions', () => {
       }));
       expect(typeof action.success).toBe('function');
       expect(typeof action.failure).toBe('function');
+    });
+  });
+
+  describe('clearAll', () => {
+    it('creates an action of type CLEAR', () => {
+      const action = clearAll();
+
+      expect(action).toEqual(expect.objectContaining({
+        type: 'snowbox/CLEAR',
+      }));
     });
   });
 });

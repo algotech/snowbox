@@ -1,6 +1,6 @@
 import { snowboxReducer } from '../src/reducers';
 import { actions } from '../src/constants';
-import { success, failure } from '../src/actions';
+import { success, failure, clearAll } from '../src/actions';
 
 const foo = { key: 'foo' };
 const bar = { key: 'bar' };
@@ -271,6 +271,66 @@ describe('reducers', () => {
     });
   });
 
+  it('adds new pages to the existing meta structure', () => {
+    const state = snowboxReducer(
+      {
+        entities: {
+          foo: {
+            2: { id: 2 },
+          },
+        },
+        meta: { foo: {
+          '#': {
+            progress: 'failed',
+            error: 'Not found',
+          },
+          '#page[2]': {
+            progress: 'succeeded',
+            result: [2],
+          },
+        } },
+      },
+      action(
+        success(actions.FETCH),
+        [foo],
+        { page: 1 },
+        {
+          foo: {
+            1: { id: 1},
+            3: { id: 3 },
+          }
+        },
+        [1, 3]
+      )
+    );
+
+    expect(state).toStrictEqual({
+      entities: {
+        foo: {
+          1: { id: 1 },
+          2: { id: 2 },
+          3: { id: 3 },
+        },
+      },
+      meta: {
+        foo: {
+          '#': {
+            progress: 'failed',
+            error: 'Not found',
+          },
+          '#page[2]': {
+            progress: 'succeeded',
+            result: [2],
+          },
+          '#page[1]': {
+            progress: 'succeeded',
+            result: [1, 3],
+          },
+        },
+      },
+    });
+  });
+
   it('does nothing when the action is not handled', () => {
     const state = snowboxReducer(
       {
@@ -313,6 +373,34 @@ describe('reducers', () => {
           result: [1, 2],
         },
       } },
+    });
+  });
+
+  it('resets the state when the clear action is dispatched', () => {
+    const state = snowboxReducer(
+      {
+        entities: {
+          foo: {
+            2: { id: 2 },
+          },
+        },
+        meta: { foo: {
+          '#': {
+            progress: 'failed',
+            error: 'Not found',
+          },
+          '#page[2]': {
+            progress: 'succeeded',
+            result: [1, 2],
+          },
+        } },
+      },
+      clearAll()
+    );
+
+    expect(state).toStrictEqual({
+      entities: {},
+      meta: {},
     });
   });
 });
