@@ -82,11 +82,19 @@ const metaReducer = (state = {}, action) => {
 
   return {
     ...state,
-    [entity.key]: entityMetaReducer(state[action.entity.key], action),
+    [entity.key]: entityMetaReducer(state[entity.key], action),
   };
 }
 
-export const snowboxReducer = combineReducers({
+export const rootReducer = combineReducers({
   entities: entitiesReducer,
   meta: metaReducer,
 });
+
+export const snowboxReducer = (state, action) => {
+  if (action.type == actions.CLEAR) {
+    return rootReducer(undefined, action);
+  }
+
+  return rootReducer(state, action);
+};

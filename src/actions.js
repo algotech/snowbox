@@ -33,3 +33,5 @@ export const remove = request(actions.REMOVE);
 export const find = request(actions.FIND);
 
 export const fetch = request(actions.FETCH);
+
+export const clearAll = createAction(actions.CLEAR);
