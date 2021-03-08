@@ -171,7 +171,7 @@ describe('actions', () => {
   });
 
   describe('clearAll', () => {
-    it('creates an action creator of type CLEAR', () => {
+    it('creates an action of type CLEAR', () => {
       const action = clearAll();
 
       expect(action).toEqual(expect.objectContaining({
