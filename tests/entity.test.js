@@ -19,10 +19,4 @@ describe('entity', () => {
   it('sets the schema relations', () => {
     expect(entity('k', null, { a: 'a' }).schema).toStrictEqual({ a: 'a' });
   });
-
-  it('attaches extra fields', () => {
-    expect(entity('k', undefined, undefined, { a: 1, b: 2 })).toStrictEqual(
-      expect.objectContaining({ a: 1, b: 2 })
-    );
-  });
 });

@@ -1,9 +1,10 @@
 import { snowboxReducer } from '../src/reducers';
 import { actions } from '../src/constants';
+import { entity } from '../src/entity';
 import { success, failure, clearAll } from '../src/actions';
 
-const foo = { key: 'foo' };
-const bar = { key: 'bar' };
+const foo = entity('foo', undefined, undefined, { idAttribute: 'key' });
+const bar = entity('bar');
 
 const action = (type, entity, data, entities, result, error, statusCode) => ({
   type, entity, data, entities, result, error, statusCode,
@@ -50,7 +51,7 @@ describe('reducers', () => {
         success(actions.FETCH),
         foo,
         { page: 2 },
-        { foo: { 1: { id: 1 }, 2: { id: 2 } } },
+        { foo: { 1: { key: 1 }, 2: { key: 2 } } },
         [1, 2]
       )
     );
@@ -58,8 +59,8 @@ describe('reducers', () => {
     expect(state).toStrictEqual({
       entities: {
         foo: {
-          1: { id: 1 },
-          2: { id: 2 },
+          1: { key: 1 },
+          2: { key: 2 },
         },
       },
       meta: { foo: {
@@ -77,8 +78,8 @@ describe('reducers', () => {
       {
         entities: {
           foo: {
-            1: { id: 1 },
-            2: { id: 2 },
+            1: { key: 1 },
+            2: { key: 2 },
           },
         },
         meta: { foo: {
@@ -103,8 +104,8 @@ describe('reducers', () => {
     expect(state).toStrictEqual({
       entities: {
         foo: {
-          1: { id: 1 },
-          2: { id: 2 },
+          1: { key: 1 },
+          2: { key: 2 },
         },
       },
       meta: { foo: {
@@ -125,8 +126,8 @@ describe('reducers', () => {
       {
         entities: {
           foo: {
-            1: { id: 1 },
-            2: { id: 2 },
+            1: { key: 1 },
+            2: { key: 2 },
           },
         },
         meta: { foo: {
@@ -150,7 +151,7 @@ describe('reducers', () => {
     expect(state).toStrictEqual({
       entities: {
         foo: {
-          1: { id: 1 },
+          1: { key: 1 },
         },
       },
       meta: { foo: {
@@ -171,8 +172,8 @@ describe('reducers', () => {
       {
         entities: {
           foo: {
-            1: { id: 1 },
-            2: { id: 2 },
+            1: { key: 1 },
+            2: { key: 2 },
           },
         },
         meta: { foo: {
@@ -189,14 +190,14 @@ describe('reducers', () => {
       action(
         success(actions.REMOVE),
         foo,
-        { id: 1 }
+        { key: 1 }
       )
     );
 
     expect(state).toStrictEqual({
       entities: {
         foo: {
-          2: { id: 2 },
+          2: { key: 2 },
         },
       },
       meta: { foo: {
@@ -217,7 +218,7 @@ describe('reducers', () => {
       {
         entities: {
           foo: {
-            2: { id: 2 },
+            2: { key: 2 },
           },
         },
         meta: { foo: {
@@ -243,7 +244,7 @@ describe('reducers', () => {
     expect(state).toStrictEqual({
       entities: {
         foo: {
-          2: { id: 2 },
+          2: { key: 2 },
         },
         bar: {
           1: { id: 1, b: 1 },
@@ -276,7 +277,7 @@ describe('reducers', () => {
       {
         entities: {
           foo: {
-            2: { id: 2 },
+            2: { key: 2 },
           },
         },
         meta: { foo: {
@@ -296,8 +297,8 @@ describe('reducers', () => {
         { page: 1 },
         {
           foo: {
-            1: { id: 1},
-            3: { id: 3 },
+            1: { key: 1},
+            3: { key: 3 },
           }
         },
         [1, 3]
@@ -307,9 +308,9 @@ describe('reducers', () => {
     expect(state).toStrictEqual({
       entities: {
         foo: {
-          1: { id: 1 },
-          2: { id: 2 },
-          3: { id: 3 },
+          1: { key: 1 },
+          2: { key: 2 },
+          3: { key: 3 },
         },
       },
       meta: {
@@ -336,7 +337,7 @@ describe('reducers', () => {
       {
         entities: {
           foo: {
-            2: { id: 2 },
+            2: { key: 2 },
           },
         },
         meta: { foo: {
@@ -353,14 +354,14 @@ describe('reducers', () => {
       action(
         'RANDOM_ACTION',
         foo,
-        { id: 1 }
+        { key: 1 }
       )
     );
 
     expect(state).toStrictEqual({
       entities: {
         foo: {
-          2: { id: 2 },
+          2: { key: 2 },
         },
       },
       meta: { foo: {
@@ -381,7 +382,7 @@ describe('reducers', () => {
       {
         entities: {
           foo: {
-            2: { id: 2 },
+            2: { key: 2 },
           },
         },
         meta: { foo: {

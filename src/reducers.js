@@ -10,7 +10,9 @@ const entitiesReducer = (state = {}, action) => {
       ...state,
       [action.entity.key]: { ...state[action.entity.key] },
     };
-    const id = typeof action.data == 'number' ? action.data : action.data.id;
+    const id = typeof action.data == 'number' ?
+      action.data :
+      action.data[action.entity.idAttribute];
     delete newState[action.entity.key][id];
 
     return newState;
