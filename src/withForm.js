@@ -38,17 +38,27 @@ const withForm = ({
       setState(formService.handleServerErrors(state, errors));
     };
 
-    const onSubmit = () => {
+    const onSubmit = async () => {
       const newState = formService.handleSubmit(state);
 
       setState(newState);
 
-      if (newState.valid) {
-        return submitForm(
-          ownProps,
-          formService.getData(newState),
-          setServerErrors
-        );
+      if (!newState.valid) {
+        return;
+      }
+
+      const resetState = await submitForm(
+        ownProps,
+        formService.getData(newState),
+        setServerErrors
+      );
+
+      if (resetState !== false) {
+        setState(formService.buildInitialState(
+          initialValues,
+          ownProps.initialValues
+        ));
+        firstRender.current = true;
       }
     };
 
