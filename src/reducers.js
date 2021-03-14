@@ -32,6 +32,7 @@ const entitiesReducer = (state = {}, action) => {
       newState[entity][id] = {
         ...((newState[entity] || {})[id] || {}),
         ...action.entities[entity][id],
+        __updatedAt: action.date,
       };
     }
   }
@@ -49,6 +50,7 @@ const fetchEntityhMetaReducer = (state = {}, action) => {
       return {
         progress: statuses.SUCCEEDED,
         result: action.result,
+        __updatedAt: action.date,
       };
     case failure(actions.FETCH):
       return {

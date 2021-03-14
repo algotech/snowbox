@@ -116,9 +116,10 @@ class Api {
             Object.keys(data).forEach(field => body.append(field, data[field]));
           }
           break;
-        default: {
-          return reject(`[Snowbox] Invalid content type "${contentType}"`);
-        }
+        default:
+          return reject(
+            new Error(`[Snowbox] Invalid content type "${contentType}"`)
+          );
       }
 
       await this.setAuthToken(xhr);

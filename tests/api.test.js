@@ -292,5 +292,19 @@ describe('api', () => {
       expect(xhr.send.mock.calls[0][0]).toStrictEqual(formDataBody);
       expect(result).toStrictEqual({ response: 'obj' });
     });
+
+    it('throws an error when the content type is invalid', async () => {
+      const xhr = mockXhr(true, true, false, false);
+
+      await expect(api.post(
+        '/path?ok=no',
+        { d: 1 },
+        { p: 3 },
+        'invalid content type'
+      )).rejects
+        .toThrow(`[Snowbox] Invalid content type "invalid content type"`);
+
+      expect(xhr.send.mock.calls.length).toBe(0);
+    });
   });
 });

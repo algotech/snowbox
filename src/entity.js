@@ -13,5 +13,9 @@ export const entity = (key, provider, relations = {}, options = {}) => {
     newEntity.provider = provider;
   }
 
+  if (typeof options.staleTimeout == 'number') {
+    newEntity.staleTimeout = options.staleTimeout;
+  }
+
   return newEntity;
 };

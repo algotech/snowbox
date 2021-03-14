@@ -19,4 +19,9 @@ describe('entity', () => {
   it('sets the schema relations', () => {
     expect(entity('k', null, { a: 'a' }).schema).toStrictEqual({ a: 'a' });
   });
+
+  it('sets the stale timeout', () => {
+    expect(entity('k', null, {}, { staleTimeout: 13 }).staleTimeout)
+      .toEqual(13);
+  });
 });

@@ -6,6 +6,7 @@ export const actions = {
   FIND: `${NAMESPACE}/FIND`,
   FETCH: `${NAMESPACE}/FETCH`,
   CLEAR: `${NAMESPACE}/CLEAR`,
+  NO_FETCH: `${NAMESPACE}/NO_FETCH`,
 };
 
 export const statuses = {

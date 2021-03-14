@@ -6,8 +6,17 @@ import { success, failure, clearAll } from '../src/actions';
 const foo = entity('foo', undefined, undefined, { idAttribute: 'key' });
 const bar = entity('bar');
 
-const action = (type, entity, data, entities, result, error, statusCode) => ({
-  type, entity, data, entities, result, error, statusCode,
+const action = (
+  type,
+  entity,
+  data,
+  entities,
+  result,
+  date,
+  error,
+  statusCode
+) => ({
+  type, entity, data, entities, result, date, error, statusCode,
 });
 
 describe('reducers', () => {
@@ -52,15 +61,16 @@ describe('reducers', () => {
         foo,
         { page: 2 },
         { foo: { 1: { key: 1 }, 2: { key: 2 } } },
-        [1, 2]
+        [1, 2],
+        'date'
       )
     );
 
     expect(state).toStrictEqual({
       entities: {
         foo: {
-          1: { key: 1 },
-          2: { key: 2 },
+          1: { key: 1, __updatedAt: 'date' },
+          2: { key: 2, __updatedAt: 'date' },
         },
       },
       meta: { foo: {
@@ -68,6 +78,7 @@ describe('reducers', () => {
         '#page[2]': {
           progress: 'succeeded',
           result: [1, 2],
+          __updatedAt: 'date',
         },
       } },
     });
@@ -93,6 +104,7 @@ describe('reducers', () => {
       action(
         failure(actions.FETCH),
         foo,
+        undefined,
         undefined,
         undefined,
         undefined,
@@ -237,7 +249,8 @@ describe('reducers', () => {
         [bar],
         { page: 1 },
         { bar: { 1: { id: 1, b: 1 }, 4: { id: 4, b: 3 } } },
-        [1, 4]
+        [1, 4],
+        't'
       )
     );
 
@@ -247,8 +260,8 @@ describe('reducers', () => {
           2: { key: 2 },
         },
         bar: {
-          1: { id: 1, b: 1 },
-          4: { id: 4, b: 3 },
+          1: { id: 1, b: 1, __updatedAt: 't' },
+          4: { id: 4, b: 3, __updatedAt: 't' },
         },
       },
       meta: {
@@ -266,6 +279,7 @@ describe('reducers', () => {
           '#page[1]': {
             progress: 'succeeded',
             result: [1, 4],
+            __updatedAt: 't'
           },
         },
       },
@@ -308,9 +322,9 @@ describe('reducers', () => {
     expect(state).toStrictEqual({
       entities: {
         foo: {
-          1: { key: 1 },
+          1: { key: 1, __updatedAt: undefined },
           2: { key: 2 },
-          3: { key: 3 },
+          3: { key: 3, __updatedAt: undefined },
         },
       },
       meta: {
@@ -326,6 +340,7 @@ describe('reducers', () => {
           '#page[1]': {
             progress: 'succeeded',
             result: [1, 3],
+            __updatedAt: undefined,
           },
         },
       },
