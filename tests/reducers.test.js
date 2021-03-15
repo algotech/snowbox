@@ -5,6 +5,7 @@ import { success, failure, clearAll } from '../src/actions';
 
 const foo = entity('foo', undefined, undefined, { idAttribute: 'key' });
 const bar = entity('bar');
+const baz = entity('baz', undefined, undefined, { singleton: true });
 
 const action = (
   type,
@@ -26,6 +27,7 @@ describe('reducers', () => {
     expect(state).toStrictEqual({
       entities: {},
       meta: { foo: { '#': { progress: 'pending' } } },
+      singletons: {},
     });
   });
 
@@ -34,6 +36,7 @@ describe('reducers', () => {
       {
         entities: {},
         meta: { foo: { '#': { progress: 'pending' } } },
+        singletons: {},
       },
       action(actions.FETCH, foo, { page: 2 })
     );
@@ -44,6 +47,7 @@ describe('reducers', () => {
         '#': { progress: 'pending' },
         '#page[2]': { progress: 'pending' },
       } },
+      singletons: {},
     });
   });
 
@@ -55,6 +59,7 @@ describe('reducers', () => {
           '#': { progress: 'pending' },
           '#page[2]': { progress: 'pending' },
         } },
+        singletons: {},
       },
       action(
         success(actions.FETCH),
@@ -81,6 +86,7 @@ describe('reducers', () => {
           __updatedAt: 'date',
         },
       } },
+      singletons: {},
     });
   });
 
@@ -100,6 +106,7 @@ describe('reducers', () => {
             result: [1, 2],
           },
         } },
+        singletons: {},
       },
       action(
         failure(actions.FETCH),
@@ -130,6 +137,7 @@ describe('reducers', () => {
           result: [1, 2],
         },
       } },
+      singletons: {},
     });
   });
 
@@ -152,6 +160,7 @@ describe('reducers', () => {
             result: [1, 2],
           },
         } },
+        singletons: {},
       },
       action(
         success(actions.REMOVE),
@@ -176,6 +185,7 @@ describe('reducers', () => {
           result: [1, 2],
         },
       } },
+      singletons: {},
     });
   });
 
@@ -198,6 +208,7 @@ describe('reducers', () => {
             result: [1, 2],
           },
         } },
+        singletons: {},
       },
       action(
         success(actions.REMOVE),
@@ -222,6 +233,7 @@ describe('reducers', () => {
           result: [1, 2],
         },
       } },
+      singletons: {},
     });
   });
 
@@ -243,6 +255,7 @@ describe('reducers', () => {
             result: [1, 2],
           },
         } },
+        singletons: {},
       },
       action(
         success(actions.FETCH),
@@ -283,6 +296,7 @@ describe('reducers', () => {
           },
         },
       },
+      singletons: {},
     });
   });
 
@@ -304,6 +318,7 @@ describe('reducers', () => {
             result: [2],
           },
         } },
+        singletons: {},
       },
       action(
         success(actions.FETCH),
@@ -344,6 +359,7 @@ describe('reducers', () => {
           },
         },
       },
+      singletons: {},
     });
   });
 
@@ -365,6 +381,7 @@ describe('reducers', () => {
             result: [1, 2],
           },
         } },
+        singletons: {},
       },
       action(
         'RANDOM_ACTION',
@@ -389,6 +406,7 @@ describe('reducers', () => {
           result: [1, 2],
         },
       } },
+      singletons: {},
     });
   });
 
@@ -410,6 +428,7 @@ describe('reducers', () => {
             result: [1, 2],
           },
         } },
+        singletons: {},
       },
       clearAll()
     );
@@ -417,6 +436,70 @@ describe('reducers', () => {
     expect(state).toStrictEqual({
       entities: {},
       meta: {},
+      singletons: {},
+    });
+  });
+
+  describe('singletons', () => {
+    it('saves the data when the entity is fetched', () => {
+      const state = snowboxReducer(
+        {
+          entities: { foo: { 2: { key: 2 } } },
+          meta: { foo: { '#': { progress: 'failed', error: 'Not found' } } },
+          singletons: {},
+        },
+        action(success(actions.FIND), baz, {}, undefined, { single: 'ton' })
+      );
+
+      expect(state).toStrictEqual({
+        entities: { foo: { 2: { key: 2 } } },
+        meta: { foo: { '#': { progress: 'failed', error: 'Not found' } } },
+        singletons: {
+          baz: { single: 'ton', __updatedAt: undefined },
+        },
+      });
+    });
+
+    it('saves the data when the entity is upserted', () => {
+      const state = snowboxReducer(
+        {
+          entities: { foo: { 2: { key: 2 } } },
+          meta: { foo: { '#': { progress: 'failed', error: 'Not found' } } },
+          singletons: {},
+        },
+        action(
+          success(actions.UPSERT), baz, {}, undefined, { single: 'ton' }, 'd'
+        )
+      );
+
+      expect(state).toStrictEqual({
+        entities: { foo: { 2: { key: 2 } } },
+        meta: { foo: { '#': { progress: 'failed', error: 'Not found' } } },
+        singletons: {
+          baz: { single: 'ton', __updatedAt: 'd' },
+        },
+      });
+    });
+
+    it('removes the data when the entity is removed', () => {
+      const state = snowboxReducer(
+        {
+          entities: { foo: { 2: { key: 2 } } },
+          meta: { foo: { '#': { progress: 'failed', error: 'Not found' } } },
+          singletons: {
+            baz: { single: 'ton', __updatedAt: 'd' },
+          },
+        },
+        action(
+          success(actions.REMOVE), baz
+        )
+      );
+
+      expect(state).toStrictEqual({
+        entities: { foo: { 2: { key: 2 } } },
+        meta: { foo: { '#': { progress: 'failed', error: 'Not found' } } },
+        singletons: {},
+      });
     });
   });
 });

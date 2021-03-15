@@ -12,11 +12,21 @@ const methods = {
 };
 
 export const shouldFetchData = (state, entity, action) => {
+  if (!entity.staleTimeout) {
+    return true;
+  }
+
+  if (action?.options?.refresh) {
+    return true;
+  }
+
   let stateData;
 
   if (Array.isArray(action.entity)) {
     const key = buildKey(action.data);
     stateData = state?.snowbox?.meta?.[entity.key]?.[key];
+  } else if (entity.singleton) {
+    stateData = state?.snowbox?.singletons?.[entity.key];
   } else {
     const id = action.data[entity.idAttribute];
     stateData = state?.snowbox?.entities?.[entity.key]?.[id];
@@ -45,10 +55,8 @@ export const snowboxMiddleware = store => next => async action => {
     action.entity[0] :
     action.entity;
 
-  if (method == 'fetch' && (entity.staleTimeout && !action?.options?.refresh)) {
-    if (!shouldFetchData(store.getState(), entity, action)) {
-      return next(noFetch());
-    }
+  if (method == 'fetch' && !shouldFetchData(store.getState(), entity, action)) {
+    return next(noFetch());
   }
 
   next(action);
@@ -58,6 +66,10 @@ export const snowboxMiddleware = store => next => async action => {
 
     if (method == 'remove') {
       return next(action.success(action.data));
+    }
+
+    if (entity.singleton) {
+      return next(action.success(action.data, undefined, response, Date.now()));
     }
 
     const { entities, result } = normalize(response, action.entity);

@@ -17,5 +17,9 @@ export const entity = (key, provider, relations = {}, options = {}) => {
     newEntity.staleTimeout = options.staleTimeout;
   }
 
+  if (options.singleton === true) {
+    newEntity.singleton = true;
+  }
+
   return newEntity;
 };

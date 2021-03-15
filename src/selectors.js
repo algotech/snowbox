@@ -14,6 +14,11 @@ const selectEntities = createSelector(
   state => state.entities
 );
 
+const selectSingletons = createSelector(
+  selectSnowbox,
+  state => state.singletons
+);
+
 const applyHydration = (entity, levels = 0) => entities => data => {
   if (!data || !levels) {
     return data;
@@ -41,6 +46,13 @@ const applyHydration = (entity, levels = 0) => entities => data => {
 };
 
 export const selectOne = (entity, hydrationLevels = 0) => id => {
+  if (entity.singleton) {
+    return createSelector(
+      selectSingletons,
+      singletons => singletons[entity.key]
+    );
+  }
+
   const hydrate = applyHydration(entity, hydrationLevels);
 
   return createSelector(

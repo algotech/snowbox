@@ -4,6 +4,7 @@ const foo = { key: 'foo' };
 const bar = { key: 'bar', schema: { foo } };
 const baz = { key: 'baz', schema: { bar: [bar] } };
 const faz = { key: 'faz' };
+const sin = { key: 'sin', singleton: true };
 
 const state = {
   snowbox: {
@@ -24,7 +25,7 @@ const state = {
       faz: {
         5: { id: 5, w: false },
         6: { id: 6, w: true },
-      }
+      },
     },
     meta: {
       foo: {
@@ -54,18 +55,24 @@ const state = {
         },
       },
     },
+    singletons: {
+      sin: {
+        si: 'ng',
+        le: 'ton',
+      },
+    },
   },
 };
 
 describe('selectors', () => {
   describe('selectOne', () => {
-    it('selects one without hydration', () => {
+    it('selects one entity without hydration', () => {
       expect(selectOne(foo)(2)(state)).toStrictEqual({ id: 2, f: 'b' });
       expect(selectOne(baz)(7)(state))
         .toStrictEqual({ id: 7, z: [], bar: [1, 4] });
     });
 
-    it('selects one and hydrates the result', () => {
+    it('selects one entity and hydrates the result', () => {
       expect(selectOne(foo, 1)(1)(state)).toStrictEqual({ id: 1, f: 'a' });
       expect(selectOne(bar, 1)(1)(state)).toStrictEqual(
         { id: 1, b: 1, foo: { id: 1, f: 'a' } }
@@ -91,6 +98,13 @@ describe('selectors', () => {
 
     it('selects null when the entity is not present', () => {
       expect(selectOne({ key: 'nope' })(3)(state)).toBe(null);
+    });
+
+    it('selects one singleton', () => {
+      expect(selectOne(sin)()(state)).toStrictEqual({
+        si: 'ng',
+        le: 'ton',
+      });
     });
   });
 
