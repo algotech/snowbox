@@ -7,7 +7,7 @@ import { buildKey } from './utils';
 const methods = {
   [actions.UPSERT]: 'upsert',
   [actions.REMOVE]: 'remove',
-  [actions.FIND]: 'fetch',
+  [actions.FIND]: 'find',
   [actions.FETCH]: 'fetch',
 };
 
@@ -55,7 +55,9 @@ export const snowboxMiddleware = store => next => async action => {
     action.entity[0] :
     action.entity;
 
-  if (method == 'fetch' && !shouldFetchData(store.getState(), entity, action)) {
+  const isGettingData = ['find', 'fetch'].includes(method);
+
+  if (isGettingData && !shouldFetchData(store.getState(), entity, action)) {
     return next(noFetch());
   }
 

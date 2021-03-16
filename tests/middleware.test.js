@@ -22,6 +22,7 @@ const getEntity = (success, staleTimeout) => ({
     upsert: mockRequest(success),
     remove: mockRequest(success),
     fetch: mockRequest(success),
+    find: mockRequest(success),
   },
   staleTimeout,
   key: 'e',
@@ -72,15 +73,14 @@ describe('middleware', () => {
 
   describe.each(
     ['upsert', 'remove', 'find', 'fetch']
-  )('handles %s action', type => {
+  )('handles %s action', method => {
     const store = { getState: () => {} };
 
     test('when succeeds', async () => {
-      const action = actionCreator(type.toUpperCase(), true);
-      const provider = type == 'fetch' ?
+      const action = actionCreator(method.toUpperCase(), true);
+      const provider = method == 'fetch' ?
         action.entity[0].provider :
         action.entity.provider;
-      const method = type == 'find' ? 'fetch' : type;
       const result = await mw.snowboxMiddleware(store)(next)(action);
 
       expect(provider[method].mock.calls.length).toBe(1);
@@ -90,24 +90,23 @@ describe('middleware', () => {
       expect(next.mock.calls[1][0]).toStrictEqual(result);
       expect(result).toStrictEqual({
         data: { id: 3 },
-        entities: type == 'remove' ? undefined : 1,
-        result: type == 'remove' ? undefined : 2,
-        date: type == 'remove' ? undefined : FROZEN_TIME,
+        entities: method == 'remove' ? undefined : 1,
+        result: method == 'remove' ? undefined : 2,
+        date: method == 'remove' ? undefined : FROZEN_TIME,
       });
-      expect(normalize.mock.calls.length).toBe(type == 'remove' ? 0 : 1);
+      expect(normalize.mock.calls.length).toBe(method == 'remove' ? 0 : 1);
 
-      if (type != 'remove') {
+      if (method != 'remove') {
         expect(normalize.mock.calls[0][0]).toBe(action.data);
         expect(normalize.mock.calls[0][1]).toStrictEqual(action.entity);
       }
     });
 
     test('when fails', async () => {
-      const action = actionCreator(type.toUpperCase(), false);
-      const provider = type == 'fetch' ?
+      const action = actionCreator(method.toUpperCase(), false);
+      const provider = method == 'fetch' ?
         action.entity[0].provider :
         action.entity.provider;
-      const method = type == 'find' ? 'fetch' : type;
       const result = await mw.snowboxMiddleware(store)(next)(action);
 
       expect(provider[method].mock.calls.length).toBe(1);
@@ -170,13 +169,10 @@ describe('middleware', () => {
 
     describe.each(
       ['upsert', 'remove']
-    )('for %s actions', type => {
+    )('for %s actions', method => {
       test('doesn nothing', async () => {
-        const action = actionCreator(type.toUpperCase(), true);
-        const provider = type == 'fetch' ?
-          action.entity[0].provider :
-          action.entity.provider;
-        const method = type == 'find' ? 'fetch' : type;
+        const action = actionCreator(method.toUpperCase(), true);
+        const provider = action.entity.provider;
         await mw.snowboxMiddleware(store)(next)(action);
 
         expect(provider[method].mock.calls.length).toBe(1);
@@ -185,12 +181,9 @@ describe('middleware', () => {
     });
 
     it('does nothing when the entity does not have staleTimeout', async () => {
-      const type = 'fetch';
-      const action = actionCreator(type.toUpperCase(), true);
-      const provider = type == 'fetch' ?
-        action.entity[0].provider :
-        action.entity.provider;
-      const method = type == 'find' ? 'fetch' : type;
+      const method = 'fetch';
+      const action = actionCreator(method.toUpperCase(), true);
+      const provider = action.entity[0].provider;
       await mw.snowboxMiddleware(store)(next)(action);
 
       expect(provider[method].mock.calls.length).toBe(1);
@@ -198,12 +191,9 @@ describe('middleware', () => {
     });
 
     it('does nothing when the action explicitly ask fresh data', async () => {
-      const type = 'find';
-      const action = actionCreator(type.toUpperCase(), true, 11, true);
-      const provider = type == 'fetch' ?
-        action.entity[0].provider :
-        action.entity.provider;
-      const method = type == 'find' ? 'fetch' : type;
+      const method = 'find';
+      const action = actionCreator(method.toUpperCase(), true, 11, true);
+      const provider = action.entity.provider;
       await mw.snowboxMiddleware(store)(next)(action);
 
       expect(provider[method].mock.calls.length).toBe(1);
@@ -211,12 +201,9 @@ describe('middleware', () => {
     });
 
     it('does not fetch new data when the entity is fresh', async () => {
-      const type = 'find';
-      const action = actionCreator(type.toUpperCase(), true, 100);
-      const provider = type == 'fetch' ?
-        action.entity[0].provider :
-        action.entity.provider;
-      const method = type == 'find' ? 'fetch' : type;
+      const method = 'find';
+      const action = actionCreator(method.toUpperCase(), true, 100);
+      const provider = action.entity.provider;
       await mw.snowboxMiddleware(store)(next)(action);
 
       expect(provider[method].mock.calls.length).toBe(0);
@@ -224,12 +211,9 @@ describe('middleware', () => {
     });
 
     it('does not fetch new data when the page is fresh', async () => {
-      const type = 'fetch';
-      const action = actionCreator(type.toUpperCase(), true, 100);
-      const provider = type == 'fetch' ?
-        action.entity[0].provider :
-        action.entity.provider;
-      const method = type == 'find' ? 'fetch' : type;
+      const method = 'fetch';
+      const action = actionCreator(method.toUpperCase(), true, 100);
+      const provider = action.entity[0].provider;
       await mw.snowboxMiddleware(store)(next)(action);
 
       expect(provider[method].mock.calls.length).toBe(0);
@@ -237,12 +221,9 @@ describe('middleware', () => {
     });
 
     it('fetches new data when the entity is stale', async () => {
-      const type = 'find';
-      const action = actionCreator(type.toUpperCase(), true, 10);
-      const provider = type == 'fetch' ?
-        action.entity[0].provider :
-        action.entity.provider;
-      const method = type == 'find' ? 'fetch' : type;
+      const method = 'find';
+      const action = actionCreator(method.toUpperCase(), true, 10);
+      const provider = action.entity.provider;
       await mw.snowboxMiddleware(store)(next)(action);
 
       expect(provider[method].mock.calls.length).toBe(1);
@@ -251,12 +232,9 @@ describe('middleware', () => {
     });
 
     it('fetches new data when the page is stale', async () => {
-      const type = 'fetch';
-      const action = actionCreator(type.toUpperCase(), true, 10);
-      const provider = type == 'fetch' ?
-        action.entity[0].provider :
-        action.entity.provider;
-      const method = type == 'find' ? 'fetch' : type;
+      const method = 'fetch';
+      const action = actionCreator(method.toUpperCase(), true, 10);
+      const provider = action.entity[0].provider;
       await mw.snowboxMiddleware(store)(next)(action);
 
       expect(provider[method].mock.calls.length).toBe(1);

@@ -1,5 +1,5 @@
 import { entity } from '../src/entity';
-import Provider from '../src/provider';
+import providerCreator from '../src/provider';
 
 describe('entity', () => {
   it('creates a normalizr entity', () => {
@@ -7,7 +7,7 @@ describe('entity', () => {
   });
 
   it('sets the provider', () => {
-    const provider = new Provider('p');
+    const provider = providerCreator({ particle: 'p' });
 
     expect(entity('key', provider).provider).toStrictEqual(provider);
   });
