@@ -4,9 +4,9 @@ import { buildKey } from './utils';
 
 const selectSnowbox = state => state.snowbox;
 
-const selectMeta = createSelector(
+const selectCollections = createSelector(
   selectSnowbox,
-  state => state.meta
+  state => state.collections
 );
 
 const selectEntities = createSelector(
@@ -61,7 +61,7 @@ export const selectOne = (entity, hydrationLevels = 0) => id => {
       hydrate(entities)(entities[entity.key][id]) :
       null
   );
-}
+};
 
 const emptyArray = [];
 
@@ -70,23 +70,34 @@ export const selectMany = (entity, hydrationLevels = 0) => filters => {
 
   return createSelector(
     selectEntities,
-    selectMeta,
-    (allEntities, allMeta) => {
+    selectCollections,
+    (allEntities, allCollections) => {
       if (!allEntities[entity.key]) {
         return emptyArray;
       }
 
       const key = buildKey(filters);
-      const meta = allMeta[entity.key] ? allMeta[entity.key][key] : null;
+      const collections = allCollections[entity.key] ?
+        allCollections[entity.key][key] :
+        null;
 
-      if (!meta || !meta.result) {
+      if (!collections || !collections.result) {
         return hydrate(allEntities)(Object.values(allEntities[entity.key]));
       }
 
-      const selectedEntities = meta.result
+      const selectedEntities = collections.result
         .map(id => allEntities[entity.key][id]);
 
       return hydrate(allEntities)(selectedEntities);
     }
   );
-}
+};
+
+export const selectMeta = entity => filters => createSelector(
+  selectCollections,
+  allCollections => {
+    const key = buildKey(filters);
+
+    return allCollections?.[entity.key]?.[key]?.meta;
+  }
+);

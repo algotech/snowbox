@@ -2,131 +2,147 @@ import queryString from 'query-string';
 
 import { contentTypes } from './constants';
 
-class Api {
-  setBaseUrl(baseUrl) {
-    if (typeof baseUrl != 'string') {
-      throw new Error('[Snowbox] Api base url must be string');
-    }
+const buildUrl = (baseUrl, path, params) => {
+  const sep = path.indexOf('?') > -1 ? '&' : '?';
+  const qs = typeof params == 'object' ?
+    sep + queryString.stringify(params) :
+    '';
 
-    this.baseUrl = baseUrl;
+  return `${baseUrl}${path}${qs}`;
+};
+
+const setContentTypeHeader = (xhr, contentType) => {
+  switch (contentType) {
+    case contentTypes.JSON:
+      return xhr.setRequestHeader(
+        'Content-type',
+        'application/json; charset=utf-8'
+      );
+    case contentTypes.FORM_DATA:
+      return xhr.setRequestHeader('Content-type', 'multipart/form-data');
+    default:
+      throw new Error(`[Snowbox API] Invalid content type "${contentType}"`)
+  }
+};
+
+const setAuthHeader = (xhr, tokenHeader, getAuthToken) => {
+  if (tokenHeader && getAuthToken) {
+    xhr.setRequestHeader(tokenHeader, getAuthToken());
+  }
+};
+
+const buildBody = (data, contentType) => {
+  if (!data) {
+    return undefined;
   }
 
-  setTokenHeaderName(tokenHeader) {
-    if (typeof tokenHeader != 'string') {
-      throw new Error('[Snowbox] Token Header Name must be string');
-    }
-
-    this.tokenHeader = tokenHeader;
-  }
-
-  setTokenGetter(tokenGetter) {
-    if (typeof tokenGetter != 'function') {
-      throw new Error('[Snowbox] Token Getter must be function');
-    }
-
-    this.tokenGetter = tokenGetter;
-  }
-
-  async setAuthToken(xhr) {
-    if (!this.tokenGetter || !this.tokenHeader) {
-      return;
-    }
-
-    const token = await this.tokenGetter();
-
-    if (!token) {
-      return;
-    }
-
-    xhr.setRequestHeader(this.tokenHeader, token);
-  }
-
-  get(path, params) {
-    return this.call('GET', path, params);
-  }
-
-  post(path, data = {}, params, contentType) {
-    return this.call('POST', path, params, data, contentType);
-  }
-
-  put(path, data = {}, params, contentType) {
-    return this.call('PUT', path, params, data, contentType);
-  }
-
-  patch(path, data = {}, params, contentType) {
-    return this.call('PATCH', path, params, data, contentType);
-  }
-
-  remove(path) {
-    return this.call('DELETE', path);
-  }
-
-  async call(method, path, params, data, contentType = contentTypes.JSON) {
-    if (!this.baseUrl) {
-      throw new Error('[Snowbox] Base API url must be defined');
-    }
-
-    return new Promise(async (resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-
-      const sep = path.indexOf('?') > -1 ? '&' : '?';
-      const qs = typeof params == 'object' ?
-        sep + queryString.stringify(params) :
-        '';
-      xhr.open(method, `${this.baseUrl}${path}${qs}`, true);
-
-      xhr.onload = () => {
-        if (xhr.readyState != 4) {
-          return false;
-        }
-
-        let response;
-        try {
-          response = JSON.parse(xhr.responseText);
-        } catch (err) {
-          response = xhr.responseText;
-        }
-
-        if (xhr.status >= 200 && xhr.status < 300) {
-          resolve(response.data ? response.data : response);
-        } else {
-          reject({
-            status: xhr.status,
-            message: response.message || response
-          });
-        }
-      };
-
-      let body;
-
-      switch (contentType) {
-        case contentTypes.JSON:
-          xhr.setRequestHeader(
-            'Content-type',
-            'application/json; charset=utf-8'
-          );
-          if (data) {
-            body = JSON.stringify(data);
-          }
-          break;
-        case contentTypes.FORM_DATA:
-          xhr.setRequestHeader('Content-type', 'multipart/form-data');
-          if (typeof data == 'object') {
-            body = new FormData();
-            Object.keys(data).forEach(field => body.append(field, data[field]));
-          }
-          break;
-        default:
-          return reject(
-            new Error(`[Snowbox] Invalid content type "${contentType}"`)
-          );
+  switch (contentType) {
+    case contentTypes.JSON:
+      if (data) {
+        return JSON.stringify(data);
+      }
+    case contentTypes.FORM_DATA:
+      if (typeof data != 'object') {
+        throw new Error('[Snowbox API] data must be object');
       }
 
-      await this.setAuthToken(xhr);
+      const body = new FormData();
+      Object.keys(data).forEach(field => body.append(field, data[field]));
 
-      xhr.send(data ? body : undefined);
-    });
+      return body;
   }
-}
+};
 
-export default new Api();
+const api = (providedOptions = {}) => {
+  if (typeof providedOptions.baseUrl != 'string' ||
+    providedOptions.baseUrl == ''
+  ) {
+    throw new Error('[Snowbox API] Base API url must be defined');
+  }
+
+  const isTokenHeaderValid = typeof providedOptions.tokenHeader == 'string' &&
+    providedOptions.tokenHeader.length > 0;
+  const isGetAuthTokenValid = typeof providedOptions.getAuthToken == 'function';
+  if (isTokenHeaderValid !== isGetAuthTokenValid) {
+    throw new Error(
+      '[Snowbox API] Both tokenHeader and getAuthToken must be provided'
+    );
+  }
+
+  const options = {
+    ...providedOptions,
+  };
+
+  const get = (path, params) => request('GET', path, params);
+
+  const post = (path, data = {}, params, contentType) => request(
+    'POST', path, params, data, contentType
+  );
+
+  const put = (path, data = {}, params, contentType) => request(
+    'PUT', path, params, data, contentType
+  );
+
+  const patch = (path, data = {}, params, contentType) => request(
+    'PATCH', path, params, data, contentType
+  );
+
+  const remove = (path) => request('DELETE', path);
+
+  const request = (
+    method,
+    path,
+    params,
+    data,
+    contentType = contentTypes.JSON
+  ) => new Promise(async (resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+
+    xhr.open(method, buildUrl(options.baseUrl, path, params), true);
+
+    xhr.onload = () => {
+      if (xhr.readyState != 4) {
+        return false;
+      }
+
+      let response;
+      try {
+        response = JSON.parse(xhr.responseText);
+      } catch (err) {
+        response = xhr.responseText;
+      }
+
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve(response);
+      } else {
+        reject({
+          status: xhr.status,
+          message: response.message || response
+        });
+      }
+    };
+
+    let body;
+
+    try {
+      setContentTypeHeader(xhr, contentType);
+      setAuthHeader(xhr, options.tokenHeader, options.getAuthToken);
+      body = buildBody(data, contentType);
+    } catch (error) {
+      return reject(error);
+    }
+
+    xhr.send(body);
+  });
+
+  return {
+    get,
+    post,
+    put,
+    patch,
+    remove,
+    request,
+  };
+};
+
+export default api;

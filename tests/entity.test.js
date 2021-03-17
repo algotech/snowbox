@@ -24,4 +24,14 @@ describe('entity', () => {
     expect(entity('k', null, {}, { staleTimeout: 13 }).staleTimeout)
       .toEqual(13);
   });
+
+  it('sets the entities path', () => {
+    expect(entity('k', null, {}, { entitiesPath: 'ep' }).entitiesPath)
+      .toEqual('ep');
+  });
+
+  it('sets fetch entities path', () => {
+    expect(entity('k', null, {}, { fetchEntitiesPath: 'ep' }).fetchEntitiesPath)
+      .toEqual('ep');
+  });
 });

@@ -11,12 +11,14 @@ err.status = 400;
 
 const request = success => async d => {
   if (success) {
-    return d;
+    return { e: { ...d } };
   }
 
   throw err;
 };
+
 const mockRequest = success => jest.fn(request(success));
+
 const getEntity = (success, staleTimeout) => ({
   provider: {
     upsert: mockRequest(success),
@@ -27,7 +29,9 @@ const getEntity = (success, staleTimeout) => ({
   staleTimeout,
   key: 'e',
   idAttribute: 'id',
+  entitiesPath: 'e',
 });
+
 const actionCreator = (type, success, staleTimeout, refresh) => ({
   type: `snowbox/${type}`,
   entity: type == 'FETCH' ?
@@ -35,7 +39,9 @@ const actionCreator = (type, success, staleTimeout, refresh) => ({
     getEntity(success, staleTimeout),
   data: { id: 3 },
   options: { refresh },
-  success: (data, entities, result, date) => ({ data, entities, result, date }),
+  success: (data, entities, result, meta, date) => (
+    { data, entities, result, meta, date }
+  ),
   failure: (data, error, statusCode) => ({ data, error, statusCode }),
 });
 
@@ -92,12 +98,17 @@ describe('middleware', () => {
         data: { id: 3 },
         entities: method == 'remove' ? undefined : 1,
         result: method == 'remove' ? undefined : 2,
+        meta: method === 'fetch' ? {} : undefined,
         date: method == 'remove' ? undefined : FROZEN_TIME,
       });
       expect(normalize.mock.calls.length).toBe(method == 'remove' ? 0 : 1);
 
+      if (method == 'fetch') {
+        expect(normalize.mock.calls[0][0]).toStrictEqual({ id: 3 });
+      }
+
       if (method != 'remove') {
-        expect(normalize.mock.calls[0][0]).toBe(action.data);
+        expect(normalize.mock.calls[0][0]).toStrictEqual(action.data);
         expect(normalize.mock.calls[0][1]).toStrictEqual(action.entity);
       }
     });
@@ -136,8 +147,8 @@ describe('middleware', () => {
         type: 'snowbox/FETCH',
         entity,
         data: { d: 'd' },
-        success: (data, entities, result, date) => (
-          { data, entities, result, date }
+        success: (data, entities, result, meta, date) => (
+          { data, entities, result, meta, date }
         ),
         failure: (data, error, statusCode) => ({ data, error, statusCode }),
       };
@@ -153,6 +164,7 @@ describe('middleware', () => {
         data: { d: 'd' },
         entities: undefined,
         result: 'r',
+        meta: undefined,
         date: FROZEN_TIME,
       });
       expect(normalize.mock.calls.length).toBe(0);
@@ -283,6 +295,115 @@ describe('middleware', () => {
       );
 
       expect(result).toBe(true);
+    });
+  });
+
+  describe('getEntitiesData', () => {
+    const response = { e: 'e', f: 'f', m: 'm' };
+
+    describe('method is not fetch', () => {
+      describe('neither entitiesPath not fetchEntitiesPath is defined', () => {
+        it('returns the response', () => {
+          expect(mw.getEntitiesData('find', {}, response))
+            .toStrictEqual(response);
+          expect(mw.getEntitiesData('upsert', {}, response))
+            .toStrictEqual(response);
+          expect(mw.getEntitiesData('remove', {}, response))
+            .toStrictEqual(response);
+        });
+      });
+
+      describe('both entitiesPath and fetchEntitiesPath are defined', () => {
+        it('returns the data at entitiesPath', () => {
+          const entity = { entitiesPath: 'e', fetchEntitiesPath: 'f' };
+
+          expect(mw.getEntitiesData('find', entity, response))
+            .toStrictEqual(response.e);
+          expect(mw.getEntitiesData('upsert', entity, response))
+            .toStrictEqual(response.e);
+          expect(mw.getEntitiesData('remove', entity, response))
+            .toStrictEqual(response.e);
+        });
+      });
+    });
+
+    describe('method is fetch', () => {
+      describe('both entitiesPath and fetchEntitiesPath are defined', () => {
+        it('returns the data at entitiesPath', () => {
+          const entity = { entitiesPath: 'e', fetchEntitiesPath: 'f' };
+
+          expect(mw.getEntitiesData('fetch', entity, response))
+            .toStrictEqual(response.f);
+        });
+      });
+
+      describe('only entitiesPath is defined', () => {
+        it('returns the response', () => {
+          expect(mw.getEntitiesData('fetch', { entitiesPath: 'e' }, response))
+            .toStrictEqual(response.e);
+        });
+      });
+
+      describe('neither entitiesPath not fetchEntitiesPath is defined', () => {
+        it('returns the response', () => {
+          expect(mw.getEntitiesData('fetch', {}, response))
+            .toStrictEqual(response);
+        });
+      });
+    })
+  });
+
+  describe('getMetaData', () => {
+    const response = { e: 'e', f: 'f', m: 'm' };
+
+    describe('method is not fetch', () => {
+      it('returns undefined', () => {
+        const entity = { entitiesPath: 'e', fetchEntitiesPath: 'f' };
+
+        expect(mw.getMetaData('upsert', entity, response)).toBe(undefined);
+        expect(mw.getMetaData('remove', entity, response)).toBe(undefined);
+        expect(mw.getMetaData('find', entity, response)).toBe(undefined);
+      });
+    });
+
+    describe('method is fetch', () => {
+      describe('both entitiesPath and fetchEntitiesPath are defined', () => {
+        it('returns the response without fetchEntitiesPath', () => {
+          const entity = { entitiesPath: 'e', fetchEntitiesPath: 'f' };
+
+          expect(mw.getMetaData('fetch', entity, response)).toStrictEqual(
+            { e: 'e', m: 'm' }
+          );
+        });
+      });
+
+      describe('only entitiesPath is defined', () => {
+        it('returns the response without fetchEntitiesPath', () => {
+          const entity = { entitiesPath: 'e' };
+
+          expect(mw.getMetaData('fetch', entity, response)).toStrictEqual(
+            { f: 'f', m: 'm' }
+          );
+        });
+      });
+
+      describe('only fetchEntitiesPath is defined', () => {
+        it('returns the response without fetchEntitiesPath', () => {
+          const entity = { fetchEntitiesPath: 'f' };
+
+          expect(mw.getMetaData('fetch', entity, response)).toStrictEqual(
+            { e: 'e', m: 'm' }
+          );
+        });
+      });
+
+      describe('neither entitiesPath not fetchEntitiesPath are defined', () => {
+        it('returns undefined', () => {
+          expect(mw.getMetaData('fetch', {}, response)).toStrictEqual(
+            undefined
+          );
+        });
+      });
     });
   });
 });

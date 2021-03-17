@@ -66,14 +66,16 @@ describe('actions', () => {
 
   describe('createSuccess', () => {
     it('creates a success action for normalized data', () => {
-      expect(createSuccess('TYPE')('e')('a', 'b', 'c', 'd')).toStrictEqual({
-        type: 'TYPE_SUCCESS',
-        entity: 'e',
-        data: 'a',
-        entities: 'b',
-        result: 'c',
-        date: 'd',
-      });
+      expect(createSuccess('TYPE')('e')('a', 'b', 'c', 'm', 'd'))
+        .toStrictEqual({
+          type: 'TYPE_SUCCESS',
+          entity: 'e',
+          data: 'a',
+          entities: 'b',
+          result: 'c',
+          meta: 'm',
+          date: 'd',
+        });
     });
   });
 
@@ -104,6 +106,7 @@ describe('actions', () => {
         data: 'a',
         entities: 'b',
         result: 'c',
+        meta: undefined,
         date: undefined,
       });
       expect(action.failure('a', 'b', 's')).toStrictEqual({
