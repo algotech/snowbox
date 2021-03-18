@@ -1,61 +1,88 @@
 import api from './api';
 import { contentTypes } from './constants';
 
-export default class Provider {
-  constructor(particleDefinition) {
-    this.particleDefinition = particleDefinition;
+const removeObjectField = (obj, field) => {
+  if (typeof obj != 'object') {
+    return undefined;
   }
 
-  fetch(filter) {
-    const path = this.getFetchPath(filter);
-    const params = this.getFetchParams(filter);
+  const newObj = { ...obj };
+  delete newObj[field];
 
-    return api.get(path, params);
+  return newObj;
+};
+
+const objGet = (object, field, defaultVal) => (
+  typeof object[field] == 'undefined' ? defaultVal : object[field]
+);
+
+const provider = (providedOptions = {}) => {
+  if (typeof providedOptions.particle != 'string' ||
+    providedOptions.particle == ''
+  ) {
+    throw new Error('"particle" must be a nonempty string');
   }
 
-  upsert(data, params) {
-    const path = this.getUpsertPath(data);
-    const method = this.getUpsertMethod(data);
+  const options = {
+    idField: 'id',
+    // Find
+    findPath: (filter, { particle, idField }) => (
+      `/${particle}/${typeof filter == 'object' ? filter[idField] : filter}`
+    ),
+    findParams: (filter, { idField }) => removeObjectField(filter, idField),
+    // Fetch
+    fetchPath: (filter, { particle }) => `/${options.particle}`,
+    fetchParams: (filter, { idField }) => removeObjectField(filter, idField),
+    // Upsert
+    createMethod: 'post',
+    updateMethod: 'put',
+    upsertContentType: contentTypes.JSON,
+    upsertPath: (data, { particle, idField }) => (
+      `/${particle}${data[idField] ? '/' : ''}${objGet(data, idField, '')}`
+    ),
+    upsertMethod: (data, { idField, createMethod, updateMethod }) => (
+      data[idField] ? updateMethod : createMethod
+    ),
+    // Remove
+    removeMethod: 'remove',
+    removePath: (data, { particle, idField }) => (
+      `/${particle}/${typeof data == 'number' ? data : data[idField]}`
+    ),
 
-    return api[method](path, data, params, this.getUpsertContentType());
-  }
+    ...providedOptions,
+  };
 
-  remove(data) {
-    const particle = this.getParticle(data);
-    const id = typeof data == 'number' ? data : data.id;
+  const find = (filter) => api.get(
+    options.findPath(filter, options),
+    options.findParams(filter, options)
+  );
 
-    return api.remove(`/${particle}/${id}`);
-  }
+  const fetch = (filter) => api.get(
+    options.fetchPath(filter, options),
+    options.fetchParams(filter, options)
+  );
 
-  getParticle(data) {
-    return typeof this.particleDefinition == 'function' ?
-      this.particleDefinition(data) :
-      this.particleDefinition;
-  }
+  const upsert = (data, params) => {
+    const method = options.upsertMethod(data, options);
 
-  getFetchPath(filter) {
-    const particle = this.getParticle(filter);
+    return api[method](
+      options.upsertPath(data, options),
+      data,
+      params,
+      options.upsertContentType
+    );
+  };
 
-    return !filter || typeof filter == 'object' ?
-      `/${particle}` :
-      `/${particle}/${filter}`;
-  }
+  const remove = (data) => api[options.removeMethod](
+    options.removePath(data, options)
+  );
 
-  getFetchParams(filter) {
-    return typeof filter == 'object' ? filter : null;
-  }
+  return {
+    find,
+    fetch,
+    upsert,
+    remove,
+  };
+};
 
-  getUpsertPath(data) {
-    const particle = this.getParticle(data);
-
-    return data.id ? `/${particle}/${data.id}` : `/${particle}`;
-  }
-
-  getUpsertMethod(data) {
-    return data.id ? 'put' : 'post';
-  }
-
-  getUpsertContentType() {
-     return contentTypes.JSON;
-  }
-}
+export default provider;

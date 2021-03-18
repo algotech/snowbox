@@ -1,4 +1,4 @@
-import { selectOne, selectMany } from '../src/selectors';
+import { selectOne, selectMany, selectMeta } from '../src/selectors';
 
 const foo = { key: 'foo' };
 const bar = { key: 'bar', schema: { foo } };
@@ -27,7 +27,7 @@ const state = {
         6: { id: 6, w: true },
       },
     },
-    meta: {
+    collections: {
       foo: {
         '#': {
           progress: 'failed',
@@ -35,6 +35,7 @@ const state = {
         },
         '#page[2]': {
           progress: 'succeeded',
+          meta: { count: 12 },
           result: [1, 2],
         },
       },
@@ -45,12 +46,14 @@ const state = {
         },
         '#page[1]': {
           progress: 'succeeded',
+          meta: undefined,
           result: [4],
         },
       },
       baz: {
         '#': {
           progress: 'succeeded',
+          meta: undefined,
           result: [7, 9],
         },
       },
@@ -152,6 +155,17 @@ describe('selectors', () => {
           bar: [],
         },
       ]);
+    });
+  });
+
+  describe('selectMeta', () => {
+    it('selects nothing when the filter is not in state', () => {
+      expect(selectMeta(foo)({ page: 11 })(state)).toBe(undefined);
+    });
+
+    it('selects metadata when the filter is valid', () => {
+      expect(selectMeta(foo)({ page: 2 })(state)).toStrictEqual({ count: 12 });
+      expect(selectMeta(bar)({ page: 1 })(state)).toStrictEqual(undefined);
     });
   });
 });

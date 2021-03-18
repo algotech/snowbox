@@ -55,7 +55,7 @@ const entitiesReducer = (state = {}, action) => {
   return newState;
 };
 
-const fetchEntityhMetaReducer = (state = {}, action) => {
+const fetchEntityCollectionsReducer = (state = {}, action) => {
   switch (action.type) {
     case actions.FETCH:
       return {
@@ -65,6 +65,7 @@ const fetchEntityhMetaReducer = (state = {}, action) => {
       return {
         progress: statuses.SUCCEEDED,
         result: action.result,
+        meta: action.meta,
         __updatedAt: action.date,
       };
     case failure(actions.FETCH):
@@ -75,16 +76,16 @@ const fetchEntityhMetaReducer = (state = {}, action) => {
   }
 };
 
-const entityMetaReducer = (state = {}, action) => {
+const entityCollectionsReducer = (state = {}, action) => {
   const key = buildKey(action.data);
 
   return {
     ...state,
-    [key]: fetchEntityhMetaReducer(state[key], action),
+    [key]: fetchEntityCollectionsReducer(state[key], action),
   };
 };
 
-const metaReducer = (state = {}, action) => {
+const collectionsReducer = (state = {}, action) => {
   const allowedActions = [
     actions.FETCH,
     success(actions.FETCH),
@@ -99,13 +100,9 @@ const metaReducer = (state = {}, action) => {
     action.entity[0] :
     action.entity;
 
-  if (entity.singleton) {
-    return state;
-  }
-
   return {
     ...state,
-    [entity.key]: entityMetaReducer(state[entity.key], action),
+    [entity.key]: entityCollectionsReducer(state[entity.key], action),
   };
 }
 
@@ -136,7 +133,7 @@ const singletonsReducer = (state = {}, action) => {
 
 export const rootReducer = combineReducers({
   entities: entitiesReducer,
-  meta: metaReducer,
+  collections: collectionsReducer,
   singletons: singletonsReducer,
 });
 

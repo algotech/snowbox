@@ -13,11 +13,12 @@ const action = (
   data,
   entities,
   result,
+  meta,
   date,
   error,
   statusCode
 ) => ({
-  type, entity, data, entities, result, date, error, statusCode,
+  type, entity, data, entities, result, meta, date, error, statusCode,
 });
 
 describe('reducers', () => {
@@ -26,7 +27,7 @@ describe('reducers', () => {
 
     expect(state).toStrictEqual({
       entities: {},
-      meta: { foo: { '#': { progress: 'pending' } } },
+      collections: { foo: { '#': { progress: 'pending' } } },
       singletons: {},
     });
   });
@@ -35,7 +36,7 @@ describe('reducers', () => {
     const state = snowboxReducer(
       {
         entities: {},
-        meta: { foo: { '#': { progress: 'pending' } } },
+        collections: { foo: { '#': { progress: 'pending' } } },
         singletons: {},
       },
       action(actions.FETCH, foo, { page: 2 })
@@ -43,7 +44,7 @@ describe('reducers', () => {
 
     expect(state).toStrictEqual({
       entities: {},
-      meta: { foo: {
+      collections: { foo: {
         '#': { progress: 'pending' },
         '#page[2]': { progress: 'pending' },
       } },
@@ -55,7 +56,7 @@ describe('reducers', () => {
     const state = snowboxReducer(
       {
         entities: {},
-        meta: { foo: {
+        collections: { foo: {
           '#': { progress: 'pending' },
           '#page[2]': { progress: 'pending' },
         } },
@@ -67,6 +68,7 @@ describe('reducers', () => {
         { page: 2 },
         { foo: { 1: { key: 1 }, 2: { key: 2 } } },
         [1, 2],
+        { count: 11 },
         'date'
       )
     );
@@ -78,11 +80,12 @@ describe('reducers', () => {
           2: { key: 2, __updatedAt: 'date' },
         },
       },
-      meta: { foo: {
+      collections: { foo: {
         '#': { progress: 'pending' },
         '#page[2]': {
           progress: 'succeeded',
           result: [1, 2],
+          meta: { count: 11 },
           __updatedAt: 'date',
         },
       } },
@@ -99,7 +102,7 @@ describe('reducers', () => {
             2: { key: 2 },
           },
         },
-        meta: { foo: {
+        collections: { foo: {
           '#': { progress: 'pending' },
           '#page[2]': {
             progress: 'succeeded',
@@ -111,6 +114,7 @@ describe('reducers', () => {
       action(
         failure(actions.FETCH),
         foo,
+        undefined,
         undefined,
         undefined,
         undefined,
@@ -127,7 +131,7 @@ describe('reducers', () => {
           2: { key: 2 },
         },
       },
-      meta: { foo: {
+      collections: { foo: {
         '#': {
           progress: 'failed',
           error: 'Not found',
@@ -150,7 +154,7 @@ describe('reducers', () => {
             2: { key: 2 },
           },
         },
-        meta: { foo: {
+        collections: { foo: {
           '#': {
             progress: 'failed',
             error: 'Not found',
@@ -175,7 +179,7 @@ describe('reducers', () => {
           1: { key: 1 },
         },
       },
-      meta: { foo: {
+      collections: { foo: {
         '#': {
           progress: 'failed',
           error: 'Not found',
@@ -198,7 +202,7 @@ describe('reducers', () => {
             2: { key: 2 },
           },
         },
-        meta: { foo: {
+        collections: { foo: {
           '#': {
             progress: 'failed',
             error: 'Not found',
@@ -223,7 +227,7 @@ describe('reducers', () => {
           2: { key: 2 },
         },
       },
-      meta: { foo: {
+      collections: { foo: {
         '#': {
           progress: 'failed',
           error: 'Not found',
@@ -245,7 +249,7 @@ describe('reducers', () => {
             2: { key: 2 },
           },
         },
-        meta: { foo: {
+        collections: { foo: {
           '#': {
             progress: 'failed',
             error: 'Not found',
@@ -263,6 +267,7 @@ describe('reducers', () => {
         { page: 1 },
         { bar: { 1: { id: 1, b: 1 }, 4: { id: 4, b: 3 } } },
         [1, 4],
+        undefined,
         't'
       )
     );
@@ -277,7 +282,7 @@ describe('reducers', () => {
           4: { id: 4, b: 3, __updatedAt: 't' },
         },
       },
-      meta: {
+      collections: {
         foo: {
           '#': {
             progress: 'failed',
@@ -292,6 +297,7 @@ describe('reducers', () => {
           '#page[1]': {
             progress: 'succeeded',
             result: [1, 4],
+            meta: undefined,
             __updatedAt: 't'
           },
         },
@@ -300,7 +306,7 @@ describe('reducers', () => {
     });
   });
 
-  it('adds new pages to the existing meta structure', () => {
+  it('adds new pages to the existing collections structure', () => {
     const state = snowboxReducer(
       {
         entities: {
@@ -308,7 +314,7 @@ describe('reducers', () => {
             2: { key: 2 },
           },
         },
-        meta: { foo: {
+        collections: { foo: {
           '#': {
             progress: 'failed',
             error: 'Not found',
@@ -330,7 +336,8 @@ describe('reducers', () => {
             3: { key: 3 },
           }
         },
-        [1, 3]
+        [1, 3],
+        { pages: 12 }
       )
     );
 
@@ -342,7 +349,7 @@ describe('reducers', () => {
           3: { key: 3, __updatedAt: undefined },
         },
       },
-      meta: {
+      collections: {
         foo: {
           '#': {
             progress: 'failed',
@@ -355,6 +362,7 @@ describe('reducers', () => {
           '#page[1]': {
             progress: 'succeeded',
             result: [1, 3],
+            meta: { pages: 12 },
             __updatedAt: undefined,
           },
         },
@@ -371,7 +379,7 @@ describe('reducers', () => {
             2: { key: 2 },
           },
         },
-        meta: { foo: {
+        collections: { foo: {
           '#': {
             progress: 'failed',
             error: 'Not found',
@@ -396,7 +404,7 @@ describe('reducers', () => {
           2: { key: 2 },
         },
       },
-      meta: { foo: {
+      collections: { foo: {
         '#': {
           progress: 'failed',
           error: 'Not found',
@@ -418,7 +426,7 @@ describe('reducers', () => {
             2: { key: 2 },
           },
         },
-        meta: { foo: {
+        collections: { foo: {
           '#': {
             progress: 'failed',
             error: 'Not found',
@@ -435,7 +443,7 @@ describe('reducers', () => {
 
     expect(state).toStrictEqual({
       entities: {},
-      meta: {},
+      collections: {},
       singletons: {},
     });
   });
@@ -445,7 +453,9 @@ describe('reducers', () => {
       const state = snowboxReducer(
         {
           entities: { foo: { 2: { key: 2 } } },
-          meta: { foo: { '#': { progress: 'failed', error: 'Not found' } } },
+          collections: {
+            foo: { '#': { progress: 'failed', error: 'Not found' } },
+          },
           singletons: {},
         },
         action(success(actions.FIND), baz, {}, undefined, { single: 'ton' })
@@ -453,7 +463,9 @@ describe('reducers', () => {
 
       expect(state).toStrictEqual({
         entities: { foo: { 2: { key: 2 } } },
-        meta: { foo: { '#': { progress: 'failed', error: 'Not found' } } },
+        collections: {
+          foo: { '#': { progress: 'failed', error: 'Not found' } },
+        },
         singletons: {
           baz: { single: 'ton', __updatedAt: undefined },
         },
@@ -464,17 +476,21 @@ describe('reducers', () => {
       const state = snowboxReducer(
         {
           entities: { foo: { 2: { key: 2 } } },
-          meta: { foo: { '#': { progress: 'failed', error: 'Not found' } } },
+          collections: {
+            foo: { '#': { progress: 'failed', error: 'Not found' } },
+          },
           singletons: {},
         },
         action(
-          success(actions.UPSERT), baz, {}, undefined, { single: 'ton' }, 'd'
+          success(actions.UPSERT), baz, {}, undefined, { single: 'ton' }, 0, 'd'
         )
       );
 
       expect(state).toStrictEqual({
         entities: { foo: { 2: { key: 2 } } },
-        meta: { foo: { '#': { progress: 'failed', error: 'Not found' } } },
+        collections: {
+          foo: { '#': { progress: 'failed', error: 'Not found' } },
+        },
         singletons: {
           baz: { single: 'ton', __updatedAt: 'd' },
         },
@@ -485,7 +501,9 @@ describe('reducers', () => {
       const state = snowboxReducer(
         {
           entities: { foo: { 2: { key: 2 } } },
-          meta: { foo: { '#': { progress: 'failed', error: 'Not found' } } },
+          collections: {
+            foo: { '#': { progress: 'failed', error: 'Not found' } },
+          },
           singletons: {
             baz: { single: 'ton', __updatedAt: 'd' },
           },
@@ -497,7 +515,9 @@ describe('reducers', () => {
 
       expect(state).toStrictEqual({
         entities: { foo: { 2: { key: 2 } } },
-        meta: { foo: { '#': { progress: 'failed', error: 'Not found' } } },
+        collections: {
+          foo: { '#': { progress: 'failed', error: 'Not found' } },
+        },
         singletons: {},
       });
     });

@@ -21,5 +21,13 @@ export const entity = (key, provider, relations = {}, options = {}) => {
     newEntity.singleton = true;
   }
 
+  if (options.entitiesPath) {
+    newEntity.entitiesPath = options.entitiesPath;
+  }
+
+  if (options.fetchEntitiesPath) {
+    newEntity.fetchEntitiesPath = options.fetchEntitiesPath;
+  }
+
   return newEntity;
 };

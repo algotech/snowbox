@@ -7,7 +7,7 @@ import { buildKey } from './utils';
 const methods = {
   [actions.UPSERT]: 'upsert',
   [actions.REMOVE]: 'remove',
-  [actions.FIND]: 'fetch',
+  [actions.FIND]: 'find',
   [actions.FETCH]: 'fetch',
 };
 
@@ -39,6 +39,38 @@ export const shouldFetchData = (state, entity, action) => {
   return Date.now() - stateData.__updatedAt > entity.staleTimeout;
 };
 
+export const getEntitiesData = (method, entity, response) => {
+  if (method == 'fetch' && entity.fetchEntitiesPath) {
+    return response[entity.fetchEntitiesPath];
+  }
+
+  if (entity.entitiesPath) {
+    return response[entity.entitiesPath];
+  }
+
+  return response;
+};
+
+export const getMetaData = (method, entity, response) => {
+  if (method != 'fetch') {
+    return;
+  }
+
+  if (!entity.fetchEntitiesPath && !entity.entitiesPath) {
+    return;
+  }
+
+  const meta = { ...response };
+
+  if (entity.fetchEntitiesPath) {
+    delete meta[entity.fetchEntitiesPath];
+  } else if (entity.entitiesPath) {
+    delete meta[entity.entitiesPath];
+  }
+
+  return meta;
+};
+
 export const snowboxMiddleware = store => next => async action => {
   if (![
       actions.UPSERT,
@@ -55,7 +87,9 @@ export const snowboxMiddleware = store => next => async action => {
     action.entity[0] :
     action.entity;
 
-  if (method == 'fetch' && !shouldFetchData(store.getState(), entity, action)) {
+  const isGettingData = ['find', 'fetch'].includes(method);
+
+  if (isGettingData && !shouldFetchData(store.getState(), entity, action)) {
     return next(noFetch());
   }
 
@@ -69,12 +103,18 @@ export const snowboxMiddleware = store => next => async action => {
     }
 
     if (entity.singleton) {
-      return next(action.success(action.data, undefined, response, Date.now()));
+      return next(
+        action.success(action.data, undefined, response, undefined, Date.now())
+      );
     }
 
-    const { entities, result } = normalize(response, action.entity);
+    const entitiesData = getEntitiesData(method, entity, response);
+    const responseMeta = getMetaData(method, entity, response);
+    const { entities, result } = normalize(entitiesData, action.entity);
 
-    return next(action.success(action.data, entities, result, Date.now()));
+    return next(
+      action.success(action.data, entities, result, responseMeta, Date.now())
+    );
   } catch (error) {
     return next(action.failure(action.data, error, error.status));
   }
