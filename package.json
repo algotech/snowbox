@@ -1,6 +1,6 @@
 {
   "name": "snowbox",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Use snowbox for a quick start with redux",
   "main": "dist/snowbox.js",
   "module": "dist/snowbox.js.es",
