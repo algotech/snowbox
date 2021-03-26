@@ -1,0 +1,15 @@
+.PaginatedTodos-page {
+  display: inline-block;
+  padding: 10px 15px;
+  margin: 5px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 25px;
+  font-size: 15px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.PaginatedTodos-page.active {
+  background-color: rgba(255, 255, 255, 0.2);
+  font-weight: bold;
+}

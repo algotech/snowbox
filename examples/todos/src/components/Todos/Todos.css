@@ -1,0 +1,11 @@
+.Todo-container {
+  min-width: 350px;
+  padding: 15px;
+  margin: 15px 0;
+  text-align: left;
+  cursor: pointer;
+}
+
+.Todo-description {
+  font-size: 15px;
+}
