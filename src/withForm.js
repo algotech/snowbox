@@ -11,7 +11,7 @@ const withForm = ({
   const formService = createFormService(fieldList, fieldConstraints);
 
   const SnowForm = (ownProps = {}) => {
-    const [state, setState] = useState(
+    const [formState, setState] = useState(
       formService.buildInitialState(
         initialValues,
         ownProps.initialValues
@@ -22,24 +22,24 @@ const withForm = ({
     useEffect(() => {
       if (firstRender.current) {
         firstRender.current = false;
-        setState(formService.validate(state));
+        setState(state => formService.validate(state));
       }
     });
 
     const onChange = (field, value) => {
-      setState(formService.handleChange(state, field, value));
+      setState(state => formService.handleChange(state, field, value));
     };
 
     const onBlur = field => {
-      setState(formService.handleBlur(state, field));
+      setState(state => formService.handleBlur(state, field));
     };
 
     const setServerErrors = (errors) => {
-      setState(formService.handleServerErrors(state, errors));
+      setState(state => formService.handleServerErrors(state, errors));
     };
 
     const onSubmit = async () => {
-      const newState = formService.handleSubmit(state);
+      const newState = formService.handleSubmit(formState);
 
       setState(newState);
 
@@ -62,10 +62,10 @@ const withForm = ({
       }
     };
 
-    const fieldsProp = Object.keys(state.fields).reduce((fields, name) => ({
+    const fieldsProp = Object.keys(formState.fields).reduce((fields, name) => ({
       ...fields,
       [name]: {
-        ...state.fields[name],
+        ...formState.fields[name],
         name,
         onBlur: () => onBlur(name),
         onChange: (value) => onChange(name, value),
@@ -77,9 +77,9 @@ const withForm = ({
         ...ownProps,
         fields: fieldsProp,
         form: {
-          valid: state.valid,
-          touched: state.touched,
-          error: state.error,
+          valid: formState.valid,
+          touched: formState.touched,
+          error: formState.error,
         },
         onFieldChange: onChange,
         onFieldBlur: onBlur,
