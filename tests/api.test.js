@@ -66,6 +66,35 @@ describe('api', () => {
     });
   });
 
+  describe('setHeaderRequest', () => {
+    it('throws when the name is not a string', () => {
+      expect(() => api.setHeaderRequest()).toThrow();
+      expect(() => api.setHeaderRequest(null)).toThrow();
+      expect(() => api.setHeaderRequest(true)).toThrow();
+      expect(() => api.setHeaderRequest(11)).toThrow();
+      expect(() => api.setHeaderRequest({})).toThrow();
+      expect(() => api.setHeaderRequest([])).toThrow();
+      expect(() => api.setHeaderRequest(() => {})).toThrow();
+    });
+
+    it('throws when the value is not a string', () => {
+      expect(() => api.setHeaderRequest('Header')).toThrow();
+      expect(() => api.setHeaderRequest('Header', null)).toThrow();
+      expect(() => api.setHeaderRequest('Header', true)).toThrow();
+      expect(() => api.setHeaderRequest('Header', 11)).toThrow();
+      expect(() => api.setHeaderRequest('Header', {})).toThrow();
+      expect(() => api.setHeaderRequest('Header', [])).toThrow();
+      expect(() => api.setHeaderRequest('Header', () => {})).toThrow();
+    });
+
+    it('sets the header', () => {
+      api.setHeaderRequest('Header', 'Value');
+
+      expect(api.requestHeaders['Header']).toBe('Value');
+    });
+
+  });
+
   describe('setTokenHeaderName', () => {
     it('throws when the name is not string', () => {
       expect(() => api.setTokenHeaderName()).toThrow();

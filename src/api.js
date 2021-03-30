@@ -3,6 +3,8 @@ import queryString from 'query-string';
 import { contentTypes } from './constants';
 
 class Api {
+  requestHeaders = {};
+
   setBaseUrl(baseUrl) {
     if (typeof baseUrl != 'string') {
       throw new Error('[Snowbox] Api base url must be string');
@@ -18,6 +20,7 @@ class Api {
 
     this.tokenHeader = tokenHeader;
   }
+
   setHeaderRequest(name, value) {
     if (typeof name != 'string') {
       throw new Error('[Snowbox] Request header name must be a string');
@@ -133,7 +136,7 @@ class Api {
           );
       }
 
-      if (Object.keys(this.requestHeaders).length === 0) {
+      if (Object.keys(this.requestHeaders).length !== 0) {
         Object.keys(this.requestHeaders).forEach(requestHeader => {
           xhr.setRequestHeader(requestHeader, this.requestHeaders[requestHeader]);
         });
