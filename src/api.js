@@ -3,8 +3,6 @@ import queryString from 'query-string';
 import { contentTypes } from './constants';
 
 class Api {
-  requestHeaders = {};
-
   setBaseUrl(baseUrl) {
     if (typeof baseUrl != 'string') {
       throw new Error('[Snowbox] Api base url must be string');
@@ -22,6 +20,10 @@ class Api {
   }
 
   setHeaderRequest(name, value) {
+    if (!this.requestHeaders) {
+      this.requestHeaders = {};
+    }
+
     if (typeof name != 'string') {
       throw new Error('[Snowbox] Request header name must be a string');
     }
