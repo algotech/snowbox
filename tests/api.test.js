@@ -184,6 +184,7 @@ describe('api', () => {
 
   describe('methods', () => {
     beforeAll(() => {
+      api.requestHeaders = undefined;
       api.setBaseUrl('base');
       api.setTokenHeaderName('auth');
       api.setTokenGetter(() => 'token');
