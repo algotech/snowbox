@@ -138,7 +138,7 @@ class Api {
           );
       }
 
-      if (Object.keys(this.requestHeaders).length !== 0) {
+      if (this.requestHeaders && Object.keys(this.requestHeaders).length !== 0) {
         Object.keys(this.requestHeaders).forEach(requestHeader => {
           xhr.setRequestHeader(requestHeader, this.requestHeaders[requestHeader]);
         });

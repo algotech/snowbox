@@ -92,7 +92,6 @@ describe('api', () => {
 
       expect(api.requestHeaders['Header']).toBe('Value');
     });
-
   });
 
   describe('setTokenHeaderName', () => {
@@ -334,6 +333,16 @@ describe('api', () => {
         .toThrow(`[Snowbox] Invalid content type "invalid content type"`);
 
       expect(xhr.send.mock.calls.length).toBe(0);
+    });
+
+    it('makes a request set a header on XHR', async () => {
+      api.setHeaderRequest('Header', 'Value')
+
+      const xhr = mockXhr(true, true, false, false);
+
+      await api.get('/anyPath');
+
+      expect(xhr.setRequestHeader.mock.calls.length).toBe(3);
     });
   });
 });
