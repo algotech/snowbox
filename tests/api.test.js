@@ -343,6 +343,7 @@ describe('api', () => {
 
       await api.get('/anyPath');
 
+      expect(xhr.setRequestHeader).toBeCalledWith('Header', 'Value');
       expect(xhr.setRequestHeader.mock.calls.length).toBe(3);
     });
   });
