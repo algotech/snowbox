@@ -66,6 +66,34 @@ describe('api', () => {
     });
   });
 
+  describe('setHeaderRequest', () => {
+    it('throws when the name is not a string', () => {
+      expect(() => api.setHeaderRequest()).toThrow();
+      expect(() => api.setHeaderRequest(null)).toThrow();
+      expect(() => api.setHeaderRequest(true)).toThrow();
+      expect(() => api.setHeaderRequest(11)).toThrow();
+      expect(() => api.setHeaderRequest({})).toThrow();
+      expect(() => api.setHeaderRequest([])).toThrow();
+      expect(() => api.setHeaderRequest(() => {})).toThrow();
+    });
+
+    it('throws when the value is not a string', () => {
+      expect(() => api.setHeaderRequest('Header')).toThrow();
+      expect(() => api.setHeaderRequest('Header', null)).toThrow();
+      expect(() => api.setHeaderRequest('Header', true)).toThrow();
+      expect(() => api.setHeaderRequest('Header', 11)).toThrow();
+      expect(() => api.setHeaderRequest('Header', {})).toThrow();
+      expect(() => api.setHeaderRequest('Header', [])).toThrow();
+      expect(() => api.setHeaderRequest('Header', () => {})).toThrow();
+    });
+
+    it('sets the header', () => {
+      api.setHeaderRequest('Header', 'Value');
+
+      expect(api.requestHeaders['Header']).toBe('Value');
+    });
+  });
+
   describe('setTokenHeaderName', () => {
     it('throws when the name is not string', () => {
       expect(() => api.setTokenHeaderName()).toThrow();
@@ -156,6 +184,7 @@ describe('api', () => {
 
   describe('methods', () => {
     beforeAll(() => {
+      api.requestHeaders = undefined;
       api.setBaseUrl('base');
       api.setTokenHeaderName('auth');
       api.setTokenGetter(() => 'token');
@@ -305,6 +334,17 @@ describe('api', () => {
         .toThrow(`[Snowbox] Invalid content type "invalid content type"`);
 
       expect(xhr.send.mock.calls.length).toBe(0);
+    });
+
+    it('makes a request set a header on XHR', async () => {
+      api.setHeaderRequest('Header', 'Value')
+
+      const xhr = mockXhr(true, true, false, false);
+
+      await api.get('/anyPath');
+
+      expect(xhr.setRequestHeader).toBeCalledWith('Header', 'Value');
+      expect(xhr.setRequestHeader.mock.calls.length).toBe(3);
     });
   });
 });

@@ -19,6 +19,22 @@ class Api {
     this.tokenHeader = tokenHeader;
   }
 
+  setHeaderRequest(name, value) {
+    if (!this.requestHeaders) {
+      this.requestHeaders = {};
+    }
+
+    if (typeof name != 'string') {
+      throw new Error('[Snowbox] Request header name must be a string');
+    }
+
+    if (typeof value != 'string') {
+      throw new Error('[Snowbox] Request header value must be a string');
+    }
+
+    this.requestHeaders[name] = value;
+  }
+
   setTokenGetter(tokenGetter) {
     if (typeof tokenGetter != 'function') {
       throw new Error('[Snowbox] Token Getter must be function');
@@ -120,6 +136,12 @@ class Api {
           return reject(
             new Error(`[Snowbox] Invalid content type "${contentType}"`)
           );
+      }
+
+      if (this.requestHeaders && Object.keys(this.requestHeaders).length !== 0) {
+        Object.keys(this.requestHeaders).forEach(requestHeader => {
+          xhr.setRequestHeader(requestHeader, this.requestHeaders[requestHeader]);
+        });
       }
 
       await this.setAuthToken(xhr);
