@@ -45,8 +45,8 @@ describe('provider', () => {
       undefined,
       contentTypes.JSON,
     ]],
-    ['remove', 'number', 5, 'remove', 1, ['/test/5']],
-    ['remove', 'obj', { id: 9 }, 'remove', 2, ['/test/9']],
+    ['remove', 'id', { id: 5 }, 'remove', 1, ['/test/5', { id: 5 }, undefined]],
+    ['remove', 'no id', { a: 9 }, 'remove', 2, ['/test', { a: 9 }, undefined]],
   ])('call %s with %s', (method, desc, param, expected, cnt, calls) => {
     const provider = new Provider(data => {
       return data && data.path ? `test/${data.path}` : 'test';

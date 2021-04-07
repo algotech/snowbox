@@ -257,17 +257,21 @@ describe('api', () => {
 
     it('makes DELETE requests', async () => {
       const xhr = mockXhr(true, false, false, false);
-
-      const result = await api.remove('/path');
-
+      let result, error;
+      try {
+        result = await api.remove('/path?ok=da', {d: 1}, {p: 3});
+      } catch (err) {
+        error = err;
+      }
       expect(xhr.open.mock.calls.length).toBe(1);
       expect(xhr.open.mock.calls[0][0]).toBe('DELETE');
-      expect(xhr.open.mock.calls[0][1]).toBe('base/path');
+      expect(xhr.open.mock.calls[0][1]).toBe('base/path?ok=da&p=3');
       expect(xhr.open.mock.calls[0][2]).toBe(true);
       expect(xhr.setRequestHeader.mock.calls.length).toBe(2);
       expect(xhr.send.mock.calls.length).toBe(1);
-      expect(xhr.send.mock.calls[0][0]).toBe(undefined);
-      expect(result).toStrictEqual({ response: 'obj' });
+      expect(xhr.send.mock.calls[0][0]).toBe(JSON.stringify({ d: 1 }));
+      expect(JSON.stringify(result)).toBe(JSON.stringify({ response: 'obj' }));
+      expect(error).toEqual(undefined);
     });
 
     it('makes form data requests', async () => {
