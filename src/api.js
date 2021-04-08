@@ -73,8 +73,8 @@ class Api {
     return this.call('PATCH', path, params, data, contentType);
   }
 
-  remove(path) {
-    return this.call('DELETE', path);
+  remove(path, data = {}, params) {
+    return this.call('DELETE', path, params, data);
   }
 
   async call(method, path, params, data, contentType = contentTypes.JSON) {

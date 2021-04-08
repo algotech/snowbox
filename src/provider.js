@@ -20,11 +20,10 @@ export default class Provider {
     return api[method](path, data, params, this.getUpsertContentType());
   }
 
-  remove(data) {
-    const particle = this.getParticle(data);
-    const id = typeof data == 'number' ? data : data.id;
+  remove(data, params) {
+    const path = this.getRemovePath(data);
 
-    return api.remove(`/${particle}/${id}`);
+    return api.remove(path, data, params);
   }
 
   getParticle(data) {
@@ -53,6 +52,12 @@ export default class Provider {
 
   getUpsertMethod(data) {
     return data.id ? 'put' : 'post';
+  }
+
+  getRemovePath(data) {
+    const particle = this.getParticle(data);
+
+    return data.id ? `/${particle}/${data.id}` : `/${particle}`
   }
 
   getUpsertContentType() {
