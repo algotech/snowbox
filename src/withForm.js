@@ -38,6 +38,14 @@ const withForm = ({
       setState(state => formService.handleServerErrors(state, errors));
     };
 
+    const onReset = () => {
+      setState(formService.buildInitialState(
+        initialValues,
+        ownProps.initialValues
+      ));
+      firstRender.current = true;
+    }
+
     const onSubmit = async () => {
       const newState = formService.handleSubmit(formState);
 
@@ -54,11 +62,7 @@ const withForm = ({
       );
 
       if (resetState !== false) {
-        setState(formService.buildInitialState(
-          initialValues,
-          ownProps.initialValues
-        ));
-        firstRender.current = true;
+        onReset();
       }
     };
 
@@ -84,6 +88,7 @@ const withForm = ({
         onFieldChange: onChange,
         onFieldBlur: onBlur,
         onSubmit,
+        onReset,
       }} />
     );
   };
