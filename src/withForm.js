@@ -46,7 +46,11 @@ const withForm = ({
       firstRender.current = true;
     }
 
-    const onSubmit = async () => {
+    const onSubmit = async (event) => {
+      if (event && typeof event.preventDefault === 'function') {
+        event.preventDefault();
+      }
+
       const newState = formService.handleSubmit(formState);
 
       setState(newState);
