@@ -2,7 +2,11 @@ import { createSelector } from 'reselect';
 
 import { buildKey } from './utils';
 
-const selectSnowbox = state => state.snowbox;
+const selectSnowbox = state => {
+  console.log(state);
+
+  return state.snowbox;
+};
 
 const selectEntityCollection = entity => (state, filters) => {
   const collections = state?.snowbox?.collections?.[entity.key];

@@ -1,0 +1,19 @@
+.AddTodo-container input {
+  display: inline-block;
+  width: 500px;
+  padding: 15px;
+  font-size: 20px;
+  background-color: #ddd;
+  border-radius: 5px;
+}
+
+.AddTodo-container input:focus {
+  outline: none;
+}
+
+.AddTodo-container button {
+  opacity: 0;
+  height: 0;
+  position: absolute;
+  top: -100000px;
+}
