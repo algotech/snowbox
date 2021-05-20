@@ -3,8 +3,6 @@ const Pagination = ({ pages, page, setPage }) => {
     return null;
   }
 
-  const classes = `PaginatedTodos-page ${page }`
-
   return (
     <div>
       {pages.map(pageNo => (

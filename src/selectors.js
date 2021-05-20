@@ -7,7 +7,7 @@ const selectSnowbox = state => state.snowbox;
 const selectEntityCollection = entity => (state, filters) => {
   const collections = state?.snowbox?.collections?.[entity.key];
 
-  return collections[buildKey(filters)];
+  return collections?.[buildKey(filters)];
 };
 
 const selectEntities = createSelector(
@@ -73,12 +73,13 @@ export const selectCollection = (entity, hydrationLevels = 0) => {
     selectEntities,
     selectEntityCollection(entity),
     (allEntities, collection) => {
-      if (!allEntities[entity.key] || !collection) {
+      if (!allEntities[entity.key] || !collection || !collection.result) {
         return emptyArray;
       }
 
       const selectedEntities = collection.result
-        .map(id => allEntities[entity.key][id]);
+        .map(id => allEntities[entity.key][id])
+        .filter(obj => obj);
 
       return hydrate(allEntities)(selectedEntities);
     }
@@ -97,6 +98,6 @@ export const selectAll = (entity, hydrationLevels = 0) =>{
 };
 
 export const selectMeta = entity => createSelector(
-  selectEntityCollection,
+  selectEntityCollection(entity),
   collection => collection?.meta
 );

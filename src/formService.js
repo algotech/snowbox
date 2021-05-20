@@ -19,7 +19,7 @@ export const buildInitialState = (fieldList) => (
       valid: true,
       touched: false,
       error: null,
-      value: typeof values[field] == 'undefined' ? null : values[field],
+      value: typeof values[field] === 'undefined' ? null : values[field],
     };
   });
 

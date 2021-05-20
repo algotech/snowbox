@@ -2,7 +2,11 @@ import { createSelector } from 'reselect';
 
 import { buildKey } from './utils';
 
-const selectSnowbox = state => state.snowbox;
+const selectSnowbox = state => {
+  console.log(state);
+
+  return state.snowbox;
+};
 
 const selectEntityCollection = entity => (state, filters) => {
   const collections = state?.snowbox?.collections?.[entity.key];
@@ -78,7 +82,8 @@ export const selectCollection = (entity, hydrationLevels = 0) => {
       }
 
       const selectedEntities = collection.result
-        .map(id => allEntities[entity.key][id]);
+        .map(id => allEntities[entity.key][id])
+        .filter(obj => obj);
 
       return hydrate(allEntities)(selectedEntities);
     }

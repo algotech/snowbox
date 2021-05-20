@@ -38,7 +38,9 @@ const withForm = ({
       setState(formService.handleServerErrors(state, errors));
     };
 
-    const onSubmit = async () => {
+    const onSubmit = async (e) => {
+      e.preventDefault();
+
       const newState = formService.handleSubmit(state);
 
       setState(newState);

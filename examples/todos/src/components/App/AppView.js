@@ -7,15 +7,14 @@ import './App.css';
 const AppView = () => (
   <div className="App">
     <header className="App-header">
+
       <img src={logo} className="App-logo" alt="logo" />
-
-      <p>
-        Todos
-      </p>
-
-      <PaginatedTodos />
-      <AddTodo />
+      <p>Todos</p>
     </header>
+
+    <AddTodo />
+    <PaginatedTodos />
+
   </div>
 );
 

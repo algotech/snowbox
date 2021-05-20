@@ -4,7 +4,7 @@ import { contentTypes } from './constants';
 
 const buildUrl = (baseUrl, path, params) => {
   const sep = path.indexOf('?') > -1 ? '&' : '?';
-  const qs = typeof params == 'object' ?
+  const qs = typeof params === 'object' ?
     sep + queryString.stringify(params) :
     '';
 
@@ -41,8 +41,10 @@ const buildBody = (data, contentType) => {
       if (data) {
         return JSON.stringify(data);
       }
+
+      return null;
     case contentTypes.FORM_DATA:
-      if (typeof data != 'object') {
+      if (typeof data !== 'object') {
         throw new Error('[Snowbox API] data must be object');
       }
 
@@ -50,19 +52,21 @@ const buildBody = (data, contentType) => {
       Object.keys(data).forEach(field => body.append(field, data[field]));
 
       return body;
+    default:
+      throw new Error('[Snowbox API] Invalid conte type');
   }
 };
 
 const api = (providedOptions = {}) => {
-  if (typeof providedOptions.baseUrl != 'string' ||
-    providedOptions.baseUrl == ''
+  if (typeof providedOptions.baseUrl !== 'string' ||
+    providedOptions.baseUrl === ''
   ) {
     throw new Error('[Snowbox API] Base API url must be defined');
   }
 
-  const isTokenHeaderValid = typeof providedOptions.tokenHeader == 'string' &&
+  const isTokenHeaderValid = typeof providedOptions.tokenHeader === 'string' &&
     providedOptions.tokenHeader.length > 0;
-  const isGetAuthTokenValid = typeof providedOptions.getAuthToken == 'function';
+  const isGetAuthTokenValid = typeof providedOptions.getAuthToken === 'function';
   if (isTokenHeaderValid !== isGetAuthTokenValid) {
     throw new Error(
       '[Snowbox API] Both tokenHeader and getAuthToken must be provided'
@@ -101,7 +105,7 @@ const api = (providedOptions = {}) => {
     xhr.open(method, buildUrl(options.baseUrl, path, params), true);
 
     xhr.onload = () => {
-      if (xhr.readyState != 4) {
+      if (xhr.readyState !== 4) {
         return false;
       }
 

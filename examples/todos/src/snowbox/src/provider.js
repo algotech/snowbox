@@ -1,7 +1,7 @@
 import { contentTypes } from './constants';
 
 const removeObjectField = (obj, field) => {
-  if (typeof obj != 'object') {
+  if (typeof obj !== 'object') {
     return undefined;
   }
 
@@ -44,7 +44,7 @@ const provider = (api) => (providedOptions = {}) => {
     ),
     // Remove
     removeMethod: 'remove',
-    removePath: (data, { particle, idField }) => (
+    removePath: (data, { particle, idField } = {}) => (
       `/${particle}/${typeof data === 'number' ? data : data[idField]}`
     ),
 

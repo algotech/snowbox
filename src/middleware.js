@@ -40,7 +40,7 @@ export const shouldFetchData = (state, entity, action) => {
 };
 
 export const getEntitiesData = (method, entity, response) => {
-  if (method == 'fetch' && entity.fetchEntitiesPath) {
+  if (method === 'fetch' && entity.fetchEntitiesPath) {
     return response[entity.fetchEntitiesPath];
   }
 
@@ -52,7 +52,7 @@ export const getEntitiesData = (method, entity, response) => {
 };
 
 export const getMetaData = (method, entity, response) => {
-  if (method != 'fetch') {
+  if (method !== 'fetch') {
     return;
   }
 
@@ -98,7 +98,7 @@ export const snowboxMiddleware = store => next => async action => {
   try {
     const response = await entity.provider[method](action.data);
 
-    if (method == 'remove') {
+    if (method === 'remove') {
       return next(action.success(action.data));
     }
 

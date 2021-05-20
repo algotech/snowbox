@@ -5,30 +5,16 @@ const cors = require('cors');
 const app = express();
 const port = 4444;
 
-const PAGE_SIZE = 3;
+const PAGE_SIZE = 5;
 
-const todosRepo = {
-  0: {
-    id: 0,
-    todo: 'Ha!',
-    description: 'Good!',
-  },
-  1: {
-    id: 1,
-    todo: 'HHa!',
-    description: 'Good!',
-  },
-  2: {
-    id: 2,
-    todo: 'GHa!',
-    description: 'Good!',
-  },
-  3: {
-    id: 3,
-    todo: 'JHa!',
-    description: 'Good!',
-  },
+let idCounter = 0;
+const genId = () => {
+  idCounter += 1;
+
+  return idCounter;
 };
+
+const todosRepo = {};
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -40,14 +26,30 @@ const validateUnique = (theTodo) => Object.values(todosRepo)
 
 app.get('/todos', (req, res) => {
   const page = req?.query?.page || 1;
+  const filter = req?.query?.filter || 'pending';
 
-  const todos = Object
+
+  const filteredTodos = Object
     .values(todosRepo)
+    .filter(todo => {
+      switch (filter) {
+        case 'complete': return todo.done;
+        case 'all': return true;
+        case 'pending':
+        default :
+          return !todo.done;
+      }
+    });
+
+  console.log('>>', filter, filteredTodos);
+
+  const todos = filteredTodos
+    .sort((a, b) => a.date > b.date ? -1 : 1)
     .slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   res.json({
     data: todos,
-    count: Object.values(todosRepo).length,
+    count: filteredTodos.length,
   });
 });
 
@@ -69,7 +71,9 @@ app.post('/todos', (req, res) => {
     });
   }
 
-  newTodo.id = Object.values(todosRepo).length;
+  newTodo.id = genId();
+  newTodo.date = new Date();
+  newTodo.done = false;
   todosRepo[newTodo.id] = newTodo;
 
   res.json(newTodo);

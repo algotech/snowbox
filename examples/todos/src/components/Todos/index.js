@@ -1,1 +1,1 @@
-export { default } from './TodosRedux';
+export { default } from './Todos';

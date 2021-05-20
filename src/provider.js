@@ -1,7 +1,7 @@
 import { contentTypes } from './constants';
 
 const removeObjectField = (obj, field) => {
-  if (typeof obj != 'object') {
+  if (typeof obj !== 'object') {
     return undefined;
   }
 
@@ -12,12 +12,12 @@ const removeObjectField = (obj, field) => {
 };
 
 const objGet = (object, field, defaultVal) => (
-  typeof object[field] == 'undefined' ? defaultVal : object[field]
+  typeof object[field] === 'undefined' ? defaultVal : object[field]
 );
 
 const provider = (api) => (providedOptions = {}) => {
   if (typeof providedOptions.particle != 'string' ||
-    providedOptions.particle == ''
+    providedOptions.particle === ''
   ) {
     throw new Error('"particle" must be a nonempty string');
   }
@@ -26,7 +26,7 @@ const provider = (api) => (providedOptions = {}) => {
     idField: 'id',
     // Find
     findPath: (filter, { particle, idField }) => (
-      `/${particle}/${typeof filter == 'object' ? filter[idField] : filter}`
+      `/${particle}/${typeof filter === 'object' ? filter[idField] : filter}`
     ),
     findParams: (filter, { idField }) => removeObjectField(filter, idField),
     // Fetch
@@ -44,8 +44,8 @@ const provider = (api) => (providedOptions = {}) => {
     ),
     // Remove
     removeMethod: 'remove',
-    removePath: (data, { particle, idField }) => (
-      `/${particle}/${typeof data == 'number' ? data : data[idField]}`
+    removePath: (data, { particle, idField } = {}) => (
+      `/${particle}/${typeof data === 'number' ? data : data[idField]}`
     ),
 
     ...providedOptions,

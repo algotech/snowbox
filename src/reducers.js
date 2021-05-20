@@ -20,12 +20,12 @@ const entitiesReducer = (state = {}, action) => {
     return state;
   }
 
-  if (action.type == success(actions.REMOVE)) {
+  if (action.type === success(actions.REMOVE)) {
     const newState = {
       ...state,
       [action.entity.key]: { ...state[action.entity.key] },
     };
-    const id = typeof action.data == 'number' ?
+    const id = typeof action.data === 'number' ?
       action.data :
       action.data[action.entity.idAttribute];
     delete newState[action.entity.key][id];
@@ -73,6 +73,8 @@ const fetchEntityCollectionsReducer = (state = {}, action) => {
         progress: statuses.FAILED,
         error: action.error,
       };
+    default:
+      return state;
   }
 };
 
@@ -117,7 +119,7 @@ const singletonsReducer = (state = {}, action) => {
 
   const newState = { ...state };
 
-  if (action.type == success(actions.REMOVE)) {
+  if (action.type === success(actions.REMOVE)) {
     delete newState[action.entity.key];
 
     return newState;
@@ -138,7 +140,7 @@ export const rootReducer = combineReducers({
 });
 
 export const snowboxReducer = (state, action) => {
-  if (action.type == actions.CLEAR) {
+  if (action.type === actions.CLEAR) {
     return rootReducer(undefined, action);
   }
 

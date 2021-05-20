@@ -1,1 +1,1 @@
-export { default } from './PaginatedTodosRedux';
+export { default } from './PaginatedTodos';
