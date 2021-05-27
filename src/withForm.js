@@ -6,9 +6,14 @@ const withForm = ({
   fields: fieldConstraints,
   submitForm,
   initialValues = {},
+  enableReinitializeDirty = false,
 }) => WrappedComponent => {
   const fieldList = Object.keys(fieldConstraints);
-  const formService = createFormService(fieldList, fieldConstraints);
+  const formService = createFormService(
+    fieldList,
+    fieldConstraints,
+    enableReinitializeDirty,
+  );
 
   const SnowForm = (ownProps = {}) => {
     const [formState, setState] = useState(
@@ -17,14 +22,14 @@ const withForm = ({
         ownProps.initialValues
       )
     );
-    const firstRender = useRef(true);
 
     useEffect(() => {
-      if (firstRender.current) {
-        firstRender.current = false;
-        setState(state => formService.validate(state));
-      }
-    });
+      setState(state => formService.validate(state));
+    }, []);
+
+    useEffect(() => {
+      setState(formService.handleNewInitialValues(ownProps.initialValues));
+    }, [ownProps.initialValues]);
 
     const onChange = (field, value) => {
       setState(state => formService.handleChange(state, field, value));
@@ -43,7 +48,6 @@ const withForm = ({
         initialValues,
         ownProps.initialValues
       ));
-      firstRender.current = true;
     }
 
     const onSubmit = async (event) => {
