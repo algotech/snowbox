@@ -107,7 +107,7 @@ export const handleChange = (fieldList, constraints) => (
       [field]: {
         ...state.fields[field],
         value,
-        dirty: state.initialValues[field] !== value,
+        dirty: state?.initialValues?.[field] !== value,
       },
     },
   };
