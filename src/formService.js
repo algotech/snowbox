@@ -31,12 +31,12 @@ export const buildInitialState = (fieldList) => (
   return state;
 };
 
-export const handleNewInitialValues = (fieldList, reinitDirty) =>
+export const handleNewInitialValues = (fieldList, constraints, reinitDirty) =>
   initialValues => state => {
     const newState = fieldList.reduce((accState, field) => {
       if ((accState.fields[field].dirty && !reinitDirty) ||
-        initialValues[field] === undefined ||
-        initialValues[field] === null
+        initialValues?.[field] === undefined ||
+        initialValues?.[field] === null
       ) {
         return accState;
       }
@@ -55,7 +55,7 @@ export const handleNewInitialValues = (fieldList, reinitDirty) =>
           ...accState.initialValues,
           [field]: initialValues[field],
         },
-      },
+      };
     }, state);
 
     return validate(fieldList, constraints)(newState);
@@ -177,6 +177,7 @@ const createFormService = (
   buildInitialState: buildInitialState(fieldList),
   handleNewInitialValues: handleNewInitialValues(
     fieldList,
+    constraints,
     enableReinitializeDirty,
   ),
   getData: getData(fieldList),
