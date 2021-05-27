@@ -43,9 +43,14 @@ describe('form service', () => {
         error: null,
         submitted: false,
         fields: {
-          foo: { valid: true, touched: false, error: null, value: null },
-          bar: { valid: true, touched: false, error: null, value: null },
-          baz: { valid: true, touched: false, error: null, value: null },
+          foo: { valid: true, touched: false, error: null, value: null, dirty: false },
+          bar: { valid: true, touched: false, error: null, value: null, dirty: false },
+          baz: { valid: true, touched: false, error: null, value: null, dirty: false },
+        },
+        initialValues: {
+          bar: null,
+          baz: null,
+          foo: null,
         },
       });
     });
@@ -59,9 +64,14 @@ describe('form service', () => {
         error: null,
         submitted: false,
         fields: {
-          foo: { valid: true, touched: false, error: null, value: 1 },
-          bar: { valid: true, touched: false, error: null, value: 'b' },
-          baz: { valid: true, touched: false, error: null, value: null },
+          foo: { valid: true, touched: false, error: null, value: 1, dirty: false },
+          bar: { valid: true, touched: false, error: null, value: 'b', dirty: false },
+          baz: { valid: true, touched: false, error: null, value: null, dirty: false },
+        },
+        initialValues: {
+          bar: 'b',
+          baz: null,
+          foo: 1,
         },
       });
     });
@@ -78,9 +88,14 @@ describe('form service', () => {
         error: null,
         submitted: false,
         fields: {
-          foo: { valid: true, touched: false, error: null, value: 9 },
-          bar: { valid: true, touched: false, error: null, value: 'y' },
-          baz: { valid: true, touched: false, error: null, value: false },
+          foo: { valid: true, touched: false, error: null, value: 9, dirty: false },
+          bar: { valid: true, touched: false, error: null, value: 'y', dirty: false },
+          baz: { valid: true, touched: false, error: null, value: false, dirty: false },
+        },
+        initialValues: {
+          bar: 'y',
+          baz: false,
+          foo: 9,
         },
       });
     });
@@ -94,9 +109,9 @@ describe('form service', () => {
         error: null,
         submitted: false,
         fields: {
-          foo: { valid: true, touched: false, error: null, value: 9 },
-          bar: { valid: true, touched: false, error: null, value: 'y' },
-          baz: { valid: true, touched: false, error: null, value: false },
+          foo: { valid: true, touched: false, error: null, value: 9, dirty: false },
+          bar: { valid: true, touched: false, error: null, value: 'y', dirty: false },
+          baz: { valid: true, touched: false, error: null, value: false, dirty: false },
         },
       });
 
@@ -112,9 +127,9 @@ describe('form service', () => {
         error: null,
         submitted: false,
         fields: {
-          foo: { valid: true, touched: false, error: null, value: null },
-          bar: { valid: true, touched: false, error: null, value: null },
-          baz: { valid: true, touched: false, error: null, value: null },
+          foo: { valid: true, touched: false, error: null, value: null, dirty: false },
+          bar: { valid: true, touched: false, error: null, value: null, dirty: false },
+          baz: { valid: true, touched: false, error: null, value: null, dirty: false },
         },
       });
 
@@ -124,9 +139,9 @@ describe('form service', () => {
         error: null,
         submitted: false,
         fields: {
-          foo: { valid: false, touched: false, error: 'Foo bad', value: null },
-          bar: { valid: false, touched: false, error: 'Bar bad', value: null },
-          baz: { valid: true, touched: false, error: null, value: null },
+          foo: { valid: false, touched: false, error: 'Foo bad', value: null, dirty: false },
+          bar: { valid: false, touched: false, error: 'Bar bad', value: null, dirty: false },
+          baz: { valid: true, touched: false, error: null, value: null, dirty: false },
         },
       });
     });
@@ -138,9 +153,9 @@ describe('form service', () => {
         error: null,
         submitted: false,
         fields: {
-          foo: { valid: false, touched: false, error: 'Foo bad', value: 2 },
-          bar: { valid: false, touched: false, error: 'Bar bad', value: 3 },
-          baz: { valid: true, touched: false, error: null, value: null },
+          foo: { valid: false, touched: false, error: 'Foo bad', value: 2, dirty: false },
+          bar: { valid: false, touched: false, error: 'Bar bad', value: 3, dirty: false },
+          baz: { valid: true, touched: false, error: null, value: null, dirty: false },
         },
       });
 
@@ -150,9 +165,9 @@ describe('form service', () => {
         error: null,
         submitted: false,
         fields: {
-          foo: { valid: true, touched: false, error: null, value: 2 },
-          bar: { valid: true, touched: false, error: null, value: 3 },
-          baz: { valid: true, touched: false, error: null, value: null },
+          foo: { valid: true, touched: false, error: null, value: 2, dirty: false },
+          bar: { valid: true, touched: false, error: null, value: 3, dirty: false },
+          baz: { valid: true, touched: false, error: null, value: null, dirty: false },
         },
       })
     });
@@ -176,9 +191,9 @@ describe('form service', () => {
           error: null,
           submitted: false,
           fields: {
-            foo: { valid: false, touched: false, error: 'Foo bad', value: null },
-            bar: { valid: false, touched: false, error: null, value: 3 },
-            baz: { valid: true, touched: false, error: null, value: null },
+            foo: { valid: false, touched: false, error: 'Foo bad', value: null, dirty: false },
+            bar: { valid: false, touched: false, error: null, value: 3, dirty: false },
+            baz: { valid: true, touched: false, error: null, value: null, dirty: false },
           },
         },
         'foo',
@@ -191,9 +206,9 @@ describe('form service', () => {
         error: null,
         submitted: false,
         fields: {
-          foo: { valid: true, touched: false, error: null, value: 2 },
-          bar: { valid: true, touched: false, error: null, value: 3 },
-          baz: { valid: true, touched: false, error: null, value: null },
+          foo: { valid: true, touched: false, error: null, value: 2, dirty: true },
+          bar: { valid: true, touched: false, error: null, value: 3, dirty: false },
+          baz: { valid: true, touched: false, error: null, value: null, dirty: false },
         },
       });
     });
@@ -217,9 +232,9 @@ describe('form service', () => {
           error: null,
           submitted: false,
           fields: {
-            foo: { valid: false, touched: false, error: 'Foo bad', value: null },
-            bar: { valid: false, touched: false, error: null, value: 3 },
-            baz: { valid: true, touched: false, error: null, value: null },
+            foo: { valid: false, touched: false, error: 'Foo bad', value: null, dirty: false },
+            bar: { valid: false, touched: false, error: null, value: 3, dirty: false },
+            baz: { valid: true, touched: false, error: null, value: null, dirty: false },
           },
         },
         'foo'
@@ -231,9 +246,9 @@ describe('form service', () => {
         error: null,
         submitted: false,
         fields: {
-          foo: { valid: false, touched: true, error: 'Foo bad', value: null },
-          bar: { valid: false, touched: false, error: null, value: 3 },
-          baz: { valid: true, touched: false, error: null, value: null },
+          foo: { valid: false, touched: true, error: 'Foo bad', value: null, dirty: false },
+          bar: { valid: false, touched: false, error: null, value: 3, dirty: false },
+          baz: { valid: true, touched: false, error: null, value: null, dirty: false },
         },
       });
     });
@@ -251,9 +266,9 @@ describe('form service', () => {
           error: null,
           submitted: true,
           fields: {
-            foo: { valid: true, touched: false, error: null, value: 2 },
-            bar: { valid: true, touched: false, error: null, value: 3 },
-            baz: { valid: true, touched: false, error: null, value: null },
+            foo: { valid: true, touched: false, error: null, value: 2, dirty: false },
+            bar: { valid: true, touched: false, error: null, value: 3, dirty: false },
+            baz: { valid: true, touched: false, error: null, value: null, dirty: false },
           },
         },
         setServerErrors
@@ -265,9 +280,9 @@ describe('form service', () => {
         error: null,
         submitted: false,
         fields: {
-          foo: { valid: false, touched: false, error: 'Foo bad', value: 2 },
-          bar: { valid: true, touched: false, error: null, value: 3 },
-          baz: { valid: true, touched: false, error: null, value: null },
+          foo: { valid: false, touched: false, error: 'Foo bad', value: 2, dirty: false },
+          bar: { valid: true, touched: false, error: null, value: 3, dirty: false },
+          baz: { valid: true, touched: false, error: null, value: null, dirty: false },
         },
       });
     });
@@ -283,9 +298,9 @@ describe('form service', () => {
           error: null,
           submitted: true,
           fields: {
-            foo: { valid: true, touched: false, error: null, value: 2 },
-            bar: { valid: true, touched: false, error: null, value: 3 },
-            baz: { valid: true, touched: false, error: null, value: null },
+            foo: { valid: true, touched: false, error: null, value: 2, dirty: false },
+            bar: { valid: true, touched: false, error: null, value: 3, dirty: false },
+            baz: { valid: true, touched: false, error: null, value: null, dirty: false },
           },
         },
         setServerErrors
@@ -297,9 +312,9 @@ describe('form service', () => {
         error: 'Am I a joke to you!?',
         submitted: false,
         fields: {
-          foo: { valid: true, touched: false, error: null, value: 2 },
-          bar: { valid: true, touched: false, error: null, value: 3 },
-          baz: { valid: true, touched: false, error: null, value: null },
+          foo: { valid: true, touched: false, error: null, value: 2, dirty: false },
+          bar: { valid: true, touched: false, error: null, value: 3, dirty: false },
+          baz: { valid: true, touched: false, error: null, value: null, dirty: false },
         },
       });
     });
@@ -313,9 +328,9 @@ describe('form service', () => {
         error: null,
         submitted: false,
         fields: {
-          foo: { valid: true, touched: false, error: null, value: 2 },
-          bar: { valid: true, touched: false, error: null, value: 3 },
-          baz: { valid: true, touched: false, error: null, value: null },
+          foo: { valid: true, touched: false, error: null, value: 2, dirty: false },
+          bar: { valid: true, touched: false, error: null, value: 3, dirty: false },
+          baz: { valid: true, touched: false, error: null, value: null, dirty: false },
         },
       });
 
@@ -325,9 +340,9 @@ describe('form service', () => {
         error: null,
         submitted: true,
         fields: {
-          foo: { valid: true, touched: true, error: null, value: 2 },
-          bar: { valid: true, touched: true, error: null, value: 3 },
-          baz: { valid: true, touched: true, error: null, value: null },
+          foo: { valid: true, touched: true, error: null, value: 2, dirty: false },
+          bar: { valid: true, touched: true, error: null, value: 3, dirty: false },
+          baz: { valid: true, touched: true, error: null, value: null, dirty: false },
         },
       });
     });
@@ -339,9 +354,9 @@ describe('form service', () => {
         error: null,
         submitted: false,
         fields: {
-          foo: { valid: true, touched: false, error: null, value: 2 },
-          bar: { valid: false, touched: true, error: 'bad', value: null },
-          baz: { valid: true, touched: false, error: null, value: null },
+          foo: { valid: true, touched: false, error: null, value: 2, dirty: false },
+          bar: { valid: false, touched: true, error: 'bad', value: null, dirty: false },
+          baz: { valid: true, touched: false, error: null, value: null, dirty: false },
         },
       });
 
@@ -351,9 +366,9 @@ describe('form service', () => {
         error: null,
         submitted: false,
         fields: {
-          foo: { valid: true, touched: true, error: null, value: 2 },
-          bar: { valid: false, touched: true, error: 'bad' , value: null },
-          baz: { valid: true, touched: true, error: null, value: null },
+          foo: { valid: true, touched: true, error: null, value: 2, dirty: false },
+          bar: { valid: false, touched: true, error: 'bad' , value: null, dirty: false },
+          baz: { valid: true, touched: true, error: null, value: null, dirty: false },
         },
       });
     });

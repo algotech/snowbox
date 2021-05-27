@@ -10,21 +10,56 @@ export const buildInitialState = (fieldList) => (
     error: null,
     submitted: false,
     fields: {},
+    initialValues: {},
   };
 
   const values = propsInitialValues ? propsInitialValues : hocInitialValues;
 
   fieldList.forEach(field => {
+    state.initialValues[field] = typeof values[field] == 'undefined' ?
+      null :
+      values[field];
     state.fields[field] = {
       valid: true,
+      dirty: false,
       touched: false,
       error: null,
-      value: typeof values[field] == 'undefined' ? null : values[field],
+      value: state.initialValues[field],
     };
   });
 
   return state;
 };
+
+export const handleNewInitialValues = (fieldList, constraints, reinitDirty) =>
+  initialValues => state => {
+    const newState = fieldList.reduce((accState, field) => {
+      if ((accState.fields[field].dirty && !reinitDirty) ||
+        initialValues?.[field] === undefined ||
+        initialValues?.[field] === null
+      ) {
+        return accState;
+      }
+
+      return {
+        ...accState,
+        fields: {
+          ...accState.fields,
+          [field]: {
+            ...accState.fields[field],
+            value: initialValues[field],
+            dirty: false,
+          },
+        },
+        initialValues: {
+          ...accState.initialValues,
+          [field]: initialValues[field],
+        },
+      };
+    }, state);
+
+    return validate(fieldList, constraints)(newState);
+  };
 
 export const getData = (fieldList) => (state) => {
   return fieldList.reduce((data, field) => ({
@@ -69,8 +104,12 @@ export const handleChange = (fieldList, constraints) => (
     ...state,
     fields: {
       ...state.fields,
-      [field]: { ...state.fields[field], value },
-    }
+      [field]: {
+        ...state.fields[field],
+        value,
+        dirty: state?.initialValues?.[field] !== value,
+      },
+    },
   };
 
   return validate(fieldList, constraints)(newState);
@@ -130,8 +169,17 @@ export const handleSubmit = (fieldList) => (state) => {
   return newState;
 };
 
-const createFormService = (fieldList, constraints) => ({
+const createFormService = (
+  fieldList,
+  constraints,
+  enableReinitializeDirty,
+) => ({
   buildInitialState: buildInitialState(fieldList),
+  handleNewInitialValues: handleNewInitialValues(
+    fieldList,
+    constraints,
+    enableReinitializeDirty,
+  ),
   getData: getData(fieldList),
   validate: validate(fieldList, constraints),
   handleChange: handleChange(fieldList, constraints),
