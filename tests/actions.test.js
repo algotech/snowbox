@@ -32,7 +32,7 @@ describe('actions', () => {
       expect(createAction('TYPE')()).toStrictEqual({ type: 'TYPE'});
     });
 
-    it('creates an action with the given type and spread data', () => {
+    it('creates an action with the given type and spread payload', () => {
       expect(createAction('TYPE')({ ok: true })).toStrictEqual({
         type: 'TYPE',
         ok: true,
@@ -65,12 +65,12 @@ describe('actions', () => {
   });
 
   describe('createSuccess', () => {
-    it('creates a success action for normalized data', () => {
+    it('creates a success action for normalized payload', () => {
       expect(createSuccess('TYPE')('e')('a', 'b', 'c', 'm', 'd'))
         .toStrictEqual({
           type: 'TYPE_SUCCESS',
           entity: 'e',
-          data: 'a',
+          payload: 'a',
           entities: 'b',
           result: 'c',
           meta: 'm',
@@ -80,11 +80,11 @@ describe('actions', () => {
   });
 
   describe('createFailure', () => {
-    it('create a failure action for normalized data', () => {
+    it('create a failure action for normalized payload', () => {
       expect(createFailure('TYPE')('e')('d', 'err', 's')).toStrictEqual({
         type: 'TYPE_FAILURE',
         entity: 'e',
-        data: 'd',
+        payload: 'd',
         error: 'err',
         statusCode: 's',
       });
@@ -98,12 +98,12 @@ describe('actions', () => {
       expect(action).toEqual(expect.objectContaining({
         type: 'TYPE',
         entity: 'e',
-        data: 'd',
+        payload: 'd',
       }));
       expect(action.success('a', 'b', 'c')).toStrictEqual({
         type: 'TYPE_SUCCESS',
         entity: 'e',
-        data: 'a',
+        payload: 'a',
         entities: 'b',
         result: 'c',
         meta: undefined,
@@ -112,7 +112,7 @@ describe('actions', () => {
       expect(action.failure('a', 'b', 's')).toStrictEqual({
         type: 'TYPE_FAILURE',
         entity: 'e',
-        data: 'a',
+        payload: 'a',
         error: 'b',
         statusCode: 's',
       });
@@ -126,7 +126,7 @@ describe('actions', () => {
       expect(action).toEqual(expect.objectContaining({
         type: 'snowbox/UPSERT',
         entity: 'e',
-        data: 'd',
+        payload: 'd',
       }));
       expect(typeof action.success).toBe('function');
       expect(typeof action.failure).toBe('function');
@@ -140,7 +140,7 @@ describe('actions', () => {
       expect(action).toEqual(expect.objectContaining({
         type: 'snowbox/REMOVE',
         entity: 'e',
-        data: 'd',
+        payload: 'd',
       }));
       expect(typeof action.success).toBe('function');
       expect(typeof action.failure).toBe('function');
@@ -154,7 +154,7 @@ describe('actions', () => {
       expect(action).toEqual(expect.objectContaining({
         type: 'snowbox/FIND',
         entity: 'e',
-        data: 'd',
+        payload: 'd',
       }));
       expect(typeof action.success).toBe('function');
       expect(typeof action.failure).toBe('function');
@@ -168,7 +168,7 @@ describe('actions', () => {
       expect(action).toEqual(expect.objectContaining({
         type: 'snowbox/FETCH',
         entity: 'e',
-        data: 'd',
+        payload: 'd',
       }));
       expect(typeof action.success).toBe('function');
       expect(typeof action.failure).toBe('function');

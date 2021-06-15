@@ -25,9 +25,9 @@ const entitiesReducer = (state = {}, action) => {
       ...state,
       [action.entity.key]: { ...state[action.entity.key] },
     };
-    const id = typeof action.data === 'number' ?
-      action.data :
-      action.data[action.entity.idAttribute];
+    const id = typeof action.payload === 'number' ?
+      action.payload :
+      action.payload[action.entity.idAttribute];
     delete newState[action.entity.key][id];
 
     return newState;
@@ -59,18 +59,18 @@ const fetchEntityCollectionsReducer = (state = {}, action) => {
   switch (action.type) {
     case actions.FETCH:
       return {
-        progress: statuses.PENDING,
+        status: statuses.PENDING,
       };
     case success(actions.FETCH):
       return {
-        progress: statuses.SUCCEEDED,
+        status: statuses.SUCCEEDED,
         result: action.result,
         meta: action.meta,
         __updatedAt: action.date,
       };
     case failure(actions.FETCH):
       return {
-        progress: statuses.FAILED,
+        status: statuses.FAILED,
         error: action.error,
       };
     default:
@@ -78,8 +78,8 @@ const fetchEntityCollectionsReducer = (state = {}, action) => {
   }
 };
 
-const entityCollectionsReducer = (state = {}, action) => {
-  const key = buildKey(action.data);
+export const entityCollectionsReducer = (state = {}, action) => {
+  const key = buildKey(action.payload);
 
   return {
     ...state,
@@ -98,15 +98,17 @@ const collectionsReducer = (state = {}, action) => {
     return state;
   }
 
-  const entity = Array.isArray(action.entity) ?
-    action.entity[0] :
-    action.entity;
+  if (!Array.isArray(action.entity)) {
+    return state;
+  }
+
+  const entity = action.entity[0];
 
   return {
     ...state,
     [entity.key]: entityCollectionsReducer(state[entity.key], action),
   };
-}
+};
 
 const singletonsReducer = (state = {}, action) => {
   if (!snowboxActions.includes(action.type)) {

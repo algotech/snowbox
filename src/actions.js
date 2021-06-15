@@ -1,34 +1,49 @@
 import { actions } from './constants';
 
-export const success = str => `${str}_SUCCESS`;
+const SUCCESS_EXTENSION = '_SUCCESS';
+const FAILURE_EXTENSION = '_FAILURE';
 
-export const failure = str => `${str}_FAILURE`;
+export const isSuccess = type => {
+  const regExp = new RegExp(`${SUCCESS_EXTENSION}$`);
 
-export const createAction = type => (data = {}) => ({ type, ...data });
+  return regExp.test(type);
+};
+
+export const isFailure = type => {
+  const regExp = new RegExp(`${FAILURE_EXTENSION}$`);
+
+  return regExp.test(type);
+};
+
+export const success = str => `${str}${SUCCESS_EXTENSION}`;
+
+export const failure = str => `${str}${FAILURE_EXTENSION}`;
+
+export const createAction = type => (payload = {}) => ({ type, ...payload });
 
 export const succeeded = type => createAction(success(type));
 
 export const failed = type => createAction(failure(type));
 
 export const createSuccess = type => entity => (
-  data,
+  payload,
   entities,
   result,
   meta,
   date
 ) => ({
-  type: success(type), entity, data, entities, result, meta, date
+  type: success(type), entity, payload, entities, result, meta, date
 });
 
-export const createFailure = type => entity => (data, error, statusCode) => ({
-  type: failure(type), entity, data, error, statusCode
+export const createFailure = type => entity => (payload, error, statusCode) => ({
+  type: failure(type), entity, payload, error, statusCode
 });
 
-export const request = type => entity => (data, options = {}) => ({
+export const request = type => entity => (payload, meta = {}) => ({
   type,
   entity,
-  data,
-  options,
+  payload,
+  meta,
   success: createSuccess(type)(entity),
   failure: createFailure(type)(entity),
 });
