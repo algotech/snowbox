@@ -1,7 +1,12 @@
 import { normalize } from 'normalizr';
 
-import { actions } from './constants';
 import { noFetch } from './actions';
+import { actions } from './constants';
+import {
+  selectCollections,
+  selectEntities,
+  selectSingletons,
+} from './selectors';
 import { buildKey } from './utils';
 
 const methods = {
@@ -11,32 +16,59 @@ const methods = {
   [actions.FETCH]: 'fetch',
 };
 
-export const shouldFetchData = (state, entity, action) => {
-  if (!entity.staleTimeout) {
-    return true;
-  }
+const getEntityFromAction = action => Array.isArray(action.entity) ?
+  action.entity[0] :
+  action.entity;
 
-  if (action?.options?.refresh) {
-    return true;
-  }
+const getRequestMethodFromAction = action => methods[action.type];
 
-  let stateData;
+export const selectExistingData = (store, action) => {
+  const entity = getEntityFromAction(action);
 
   if (Array.isArray(action.entity)) {
-    const key = buildKey(action.data);
-    stateData = state?.snowbox?.meta?.[entity.key]?.[key];
-  } else if (entity.singleton) {
-    stateData = state?.snowbox?.singletons?.[entity.key];
-  } else {
-    const id = action.data[entity.idAttribute];
-    stateData = state?.snowbox?.entities?.[entity.key]?.[id];
+    const key = buildKey(action.payload);
+    const state = action?.meta?.isListHook ?
+      store.getState() :
+      selectCollections(store.getState())?.[entity.key];
+
+    return state?.[key];
   }
 
-  if (!stateData?.__updatedAt) {
-    return true;
+  if (entity.singleton) {
+    const state = selectSingletons(store.getState());
+
+    return state?.[entity.key];
   }
 
-  return Date.now() - stateData.__updatedAt > entity.staleTimeout;
+  const state = selectEntities(store.getState());
+  const id = action.payload[entity.idAttribute];
+
+  return state?.[entity.key]?.[id];
+};
+
+export const dataAlreadyExists = (store, action) => {
+  const method = getRequestMethodFromAction(action);
+  const entity = getEntityFromAction(action);
+
+  if (!['find', 'fetch'].includes(method)) {
+    return false;
+  }
+
+  if (!entity.staleTimeout) {
+    return false;
+  }
+
+  if (action?.meta?.refresh) {
+    return false;
+  }
+
+  let state = selectExistingData(store, action);
+
+  if (!state?.__updatedAt) {
+    return false;
+  }
+
+  return Date.now() - state.__updatedAt < entity.staleTimeout;
 };
 
 export const getEntitiesData = (method, entity, response) => {
@@ -51,7 +83,7 @@ export const getEntitiesData = (method, entity, response) => {
   return response;
 };
 
-export const getMetaData = (method, entity, response) => {
+export const getResponseMetaData = (method, entity, response) => {
   if (method !== 'fetch') {
     return;
   }
@@ -71,51 +103,71 @@ export const getMetaData = (method, entity, response) => {
   return meta;
 };
 
+const isHandledAction = action => [
+  actions.UPSERT,
+  actions.REMOVE,
+  actions.FIND,
+  actions.FETCH,
+].includes(action.type);
+
+const requestData = action => {
+  const method = getRequestMethodFromAction(action);
+  const entity = getEntityFromAction(action);
+
+  return entity.provider[method](action.payload);
+};
+
+const getSuccessActionParams = (action, response) => {
+  const method = getRequestMethodFromAction(action);
+
+  if (method === 'remove') {
+    return [action.payload];
+  }
+
+  const entity = getEntityFromAction(action);
+
+  if (entity.singleton) {
+    return [action.payload, undefined, response, undefined, Date.now()];
+  }
+
+  const responseMeta = getResponseMetaData(method, entity, response);
+
+  if (action?.meta?.isListHook) {
+    return [
+      action.payload,
+      undefined,
+      response?.[entity.fetchEntitiesPath || entity.entitiesPath],
+      responseMeta,
+      Date.now(),
+    ];
+  }
+
+  const entitiesData = getEntitiesData(method, entity, response);
+  const { entities, result } = normalize(entitiesData, action.entity);
+
+  return [action.payload, entities, result, responseMeta, Date.now()];
+};
+
 export const snowboxMiddleware = store => next => async action => {
-  if (![
-      actions.UPSERT,
-      actions.REMOVE,
-      actions.FIND,
-      actions.FETCH,
-    ].includes(action.type)
-  ) {
+  if (!isHandledAction(action)) {
     return next(action);
   }
 
-  const method = methods[action.type];
-  const entity = Array.isArray(action.entity) ?
-    action.entity[0] :
-    action.entity;
-
-  const isGettingData = ['find', 'fetch'].includes(method);
-
-  if (isGettingData && !shouldFetchData(store.getState(), entity, action)) {
+  if (dataAlreadyExists(store, action)) {
     return next(noFetch());
   }
 
-  next(action);
+  if (!action?.meta?.isListHook) {
+    next(action);
+  }
 
   try {
-    const response = await entity.provider[method](action.data);
+    const response = await requestData(action);
 
-    if (method === 'remove') {
-      return next(action.success(action.data));
-    }
+    const actionParams = getSuccessActionParams(action, response);
 
-    if (entity.singleton) {
-      return next(
-        action.success(action.data, undefined, response, undefined, Date.now())
-      );
-    }
-
-    const entitiesData = getEntitiesData(method, entity, response);
-    const responseMeta = getMetaData(method, entity, response);
-    const { entities, result } = normalize(entitiesData, action.entity);
-
-    return next(
-      action.success(action.data, entities, result, responseMeta, Date.now())
-    );
+    return next(action.success(...actionParams));
   } catch (error) {
-    return next(action.failure(action.data, error, error.status));
+    return next(action.failure(action.payload, error, error.status));
   }
 };

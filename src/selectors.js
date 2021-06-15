@@ -4,21 +4,26 @@ import { buildKey } from './utils';
 
 const selectSnowbox = state => state.snowbox;
 
+export const selectCollections = createSelector(
+  selectSnowbox,
+  snowbox => snowbox.collections,
+);
+
+export const selectEntities = createSelector(
+  selectSnowbox,
+  state => state.entities
+);
+
+export const selectSingletons = createSelector(
+  selectSnowbox,
+  state => state.singletons
+);
+
 const selectEntityCollection = entity => (state, filters) => {
   const collections = state?.snowbox?.collections?.[entity.key];
 
   return collections?.[buildKey(filters)];
 };
-
-const selectEntities = createSelector(
-  selectSnowbox,
-  state => state.entities
-);
-
-const selectSingletons = createSelector(
-  selectSnowbox,
-  state => state.singletons
-);
 
 const applyHydration = (entity, levels = 0) => entities => data => {
   if (!data || !levels) {

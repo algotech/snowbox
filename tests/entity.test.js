@@ -7,7 +7,7 @@ describe('entity', () => {
   });
 
   it('sets the provider', () => {
-    const provider = providerCreator({ particle: 'p' });
+    const provider = providerCreator({})({ particle: 'p' });
 
     expect(entity('key', provider).provider).toStrictEqual(provider);
   });

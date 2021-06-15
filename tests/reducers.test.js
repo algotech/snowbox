@@ -10,7 +10,7 @@ const baz = entity('baz', undefined, undefined, { singleton: true });
 const action = (
   type,
   entity,
-  data,
+  payload,
   entities,
   result,
   meta,
@@ -18,16 +18,16 @@ const action = (
   error,
   statusCode
 ) => ({
-  type, entity, data, entities, result, meta, date, error, statusCode,
+  type, entity, payload, entities, result, meta, date, error, statusCode,
 });
 
 describe('reducers', () => {
   it('handles FETCH action', () => {
-    const state = snowboxReducer(undefined, action(actions.FETCH, foo));
+    const state = snowboxReducer(undefined, action(actions.FETCH, [foo]));
 
     expect(state).toStrictEqual({
       entities: {},
-      collections: { foo: { '#': { progress: 'pending' } } },
+      collections: { foo: { '#': { status: 'pending' } } },
       singletons: {},
     });
   });
@@ -36,17 +36,17 @@ describe('reducers', () => {
     const state = snowboxReducer(
       {
         entities: {},
-        collections: { foo: { '#': { progress: 'pending' } } },
+        collections: { foo: { '#': { status: 'pending' } } },
         singletons: {},
       },
-      action(actions.FETCH, foo, { page: 2 })
+      action(actions.FETCH, [foo], { page: 2 })
     );
 
     expect(state).toStrictEqual({
       entities: {},
       collections: { foo: {
-        '#': { progress: 'pending' },
-        '#page[2]': { progress: 'pending' },
+        '#': { status: 'pending' },
+        '#page[2]': { status: 'pending' },
       } },
       singletons: {},
     });
@@ -57,14 +57,14 @@ describe('reducers', () => {
       {
         entities: {},
         collections: { foo: {
-          '#': { progress: 'pending' },
-          '#page[2]': { progress: 'pending' },
+          '#': { status: 'pending' },
+          '#page[2]': { status: 'pending' },
         } },
         singletons: {},
       },
       action(
         success(actions.FETCH),
-        foo,
+        [foo],
         { page: 2 },
         { foo: { 1: { key: 1 }, 2: { key: 2 } } },
         [1, 2],
@@ -81,9 +81,9 @@ describe('reducers', () => {
         },
       },
       collections: { foo: {
-        '#': { progress: 'pending' },
+        '#': { status: 'pending' },
         '#page[2]': {
-          progress: 'succeeded',
+          status: 'succeeded',
           result: [1, 2],
           meta: { count: 11 },
           __updatedAt: 'date',
@@ -103,9 +103,9 @@ describe('reducers', () => {
           },
         },
         collections: { foo: {
-          '#': { progress: 'pending' },
+          '#': { status: 'pending' },
           '#page[2]': {
-            progress: 'succeeded',
+            status: 'succeeded',
             result: [1, 2],
           },
         } },
@@ -113,7 +113,7 @@ describe('reducers', () => {
       },
       action(
         failure(actions.FETCH),
-        foo,
+        [foo],
         undefined,
         undefined,
         undefined,
@@ -133,11 +133,11 @@ describe('reducers', () => {
       },
       collections: { foo: {
         '#': {
-          progress: 'failed',
+          status: 'failed',
           error: 'Not found',
         },
         '#page[2]': {
-          progress: 'succeeded',
+          status: 'succeeded',
           result: [1, 2],
         },
       } },
@@ -145,7 +145,7 @@ describe('reducers', () => {
     });
   });
 
-  it('handles successful REMOVE with number data', () => {
+  it('handles successful REMOVE with number payload', () => {
     const state = snowboxReducer(
       {
         entities: {
@@ -156,11 +156,11 @@ describe('reducers', () => {
         },
         collections: { foo: {
           '#': {
-            progress: 'failed',
+            status: 'failed',
             error: 'Not found',
           },
           '#page[2]': {
-            progress: 'succeeded',
+            status: 'succeeded',
             result: [1, 2],
           },
         } },
@@ -181,11 +181,11 @@ describe('reducers', () => {
       },
       collections: { foo: {
         '#': {
-          progress: 'failed',
+          status: 'failed',
           error: 'Not found',
         },
         '#page[2]': {
-          progress: 'succeeded',
+          status: 'succeeded',
           result: [1, 2],
         },
       } },
@@ -204,11 +204,11 @@ describe('reducers', () => {
         },
         collections: { foo: {
           '#': {
-            progress: 'failed',
+            status: 'failed',
             error: 'Not found',
           },
           '#page[2]': {
-            progress: 'succeeded',
+            status: 'succeeded',
             result: [1, 2],
           },
         } },
@@ -229,11 +229,11 @@ describe('reducers', () => {
       },
       collections: { foo: {
         '#': {
-          progress: 'failed',
+          status: 'failed',
           error: 'Not found',
         },
         '#page[2]': {
-          progress: 'succeeded',
+          status: 'succeeded',
           result: [1, 2],
         },
       } },
@@ -251,11 +251,11 @@ describe('reducers', () => {
         },
         collections: { foo: {
           '#': {
-            progress: 'failed',
+            status: 'failed',
             error: 'Not found',
           },
           '#page[2]': {
-            progress: 'succeeded',
+            status: 'succeeded',
             result: [1, 2],
           },
         } },
@@ -285,17 +285,17 @@ describe('reducers', () => {
       collections: {
         foo: {
           '#': {
-            progress: 'failed',
+            status: 'failed',
             error: 'Not found',
           },
           '#page[2]': {
-            progress: 'succeeded',
+            status: 'succeeded',
             result: [1, 2],
           },
         },
         bar: {
           '#page[1]': {
-            progress: 'succeeded',
+            status: 'succeeded',
             result: [1, 4],
             meta: undefined,
             __updatedAt: 't'
@@ -316,11 +316,11 @@ describe('reducers', () => {
         },
         collections: { foo: {
           '#': {
-            progress: 'failed',
+            status: 'failed',
             error: 'Not found',
           },
           '#page[2]': {
-            progress: 'succeeded',
+            status: 'succeeded',
             result: [2],
           },
         } },
@@ -352,15 +352,15 @@ describe('reducers', () => {
       collections: {
         foo: {
           '#': {
-            progress: 'failed',
+            status: 'failed',
             error: 'Not found',
           },
           '#page[2]': {
-            progress: 'succeeded',
+            status: 'succeeded',
             result: [2],
           },
           '#page[1]': {
-            progress: 'succeeded',
+            status: 'succeeded',
             result: [1, 3],
             meta: { pages: 12 },
             __updatedAt: undefined,
@@ -381,11 +381,11 @@ describe('reducers', () => {
         },
         collections: { foo: {
           '#': {
-            progress: 'failed',
+            status: 'failed',
             error: 'Not found',
           },
           '#page[2]': {
-            progress: 'succeeded',
+            status: 'succeeded',
             result: [1, 2],
           },
         } },
@@ -406,11 +406,11 @@ describe('reducers', () => {
       },
       collections: { foo: {
         '#': {
-          progress: 'failed',
+          status: 'failed',
           error: 'Not found',
         },
         '#page[2]': {
-          progress: 'succeeded',
+          status: 'succeeded',
           result: [1, 2],
         },
       } },
@@ -428,11 +428,11 @@ describe('reducers', () => {
         },
         collections: { foo: {
           '#': {
-            progress: 'failed',
+            status: 'failed',
             error: 'Not found',
           },
           '#page[2]': {
-            progress: 'succeeded',
+            status: 'succeeded',
             result: [1, 2],
           },
         } },
@@ -454,7 +454,7 @@ describe('reducers', () => {
         {
           entities: { foo: { 2: { key: 2 } } },
           collections: {
-            foo: { '#': { progress: 'failed', error: 'Not found' } },
+            foo: { '#': { status: 'failed', error: 'Not found' } },
           },
           singletons: {},
         },
@@ -464,7 +464,7 @@ describe('reducers', () => {
       expect(state).toStrictEqual({
         entities: { foo: { 2: { key: 2 } } },
         collections: {
-          foo: { '#': { progress: 'failed', error: 'Not found' } },
+          foo: { '#': { status: 'failed', error: 'Not found' } },
         },
         singletons: {
           baz: { single: 'ton', __updatedAt: undefined },
@@ -477,7 +477,7 @@ describe('reducers', () => {
         {
           entities: { foo: { 2: { key: 2 } } },
           collections: {
-            foo: { '#': { progress: 'failed', error: 'Not found' } },
+            foo: { '#': { status: 'failed', error: 'Not found' } },
           },
           singletons: {},
         },
@@ -489,7 +489,7 @@ describe('reducers', () => {
       expect(state).toStrictEqual({
         entities: { foo: { 2: { key: 2 } } },
         collections: {
-          foo: { '#': { progress: 'failed', error: 'Not found' } },
+          foo: { '#': { status: 'failed', error: 'Not found' } },
         },
         singletons: {
           baz: { single: 'ton', __updatedAt: 'd' },
@@ -502,7 +502,7 @@ describe('reducers', () => {
         {
           entities: { foo: { 2: { key: 2 } } },
           collections: {
-            foo: { '#': { progress: 'failed', error: 'Not found' } },
+            foo: { '#': { status: 'failed', error: 'Not found' } },
           },
           singletons: {
             baz: { single: 'ton', __updatedAt: 'd' },
@@ -516,7 +516,7 @@ describe('reducers', () => {
       expect(state).toStrictEqual({
         entities: { foo: { 2: { key: 2 } } },
         collections: {
-          foo: { '#': { progress: 'failed', error: 'Not found' } },
+          foo: { '#': { status: 'failed', error: 'Not found' } },
         },
         singletons: {},
       });

@@ -1,5 +1,6 @@
 import { normalize } from 'normalizr';
 
+import { actions } from '../src/constants';
 import * as mw from '../src/middleware';
 
 jest.mock('normalizr');
@@ -37,12 +38,12 @@ const actionCreator = (type, success, staleTimeout, refresh) => ({
   entity: type == 'FETCH' ?
     [getEntity(success, staleTimeout)] :
     getEntity(success, staleTimeout),
-  data: { id: 3 },
+  payload: { id: 3 },
   options: { refresh },
-  success: (data, entities, result, meta, date) => (
-    { data, entities, result, meta, date }
+  success: (payload, entities, result, meta, date) => (
+    { payload, entities, result, meta, date }
   ),
-  failure: (data, error, statusCode) => ({ data, error, statusCode }),
+  failure: (payload, error, statusCode) => ({ payload, error, statusCode }),
 });
 
 describe('middleware', () => {
@@ -51,7 +52,7 @@ describe('middleware', () => {
   beforeAll(() => {
     next = jest.fn(a => a);
     normalize.mockImplementation(
-      (data, entity) => ({ entities: 1, result: 2 })
+      (payload, entity) => ({ entities: 1, result: 2 })
     );
     jest
       .spyOn(global.Date, 'now')
@@ -90,12 +91,12 @@ describe('middleware', () => {
       const result = await mw.snowboxMiddleware(store)(next)(action);
 
       expect(provider[method].mock.calls.length).toBe(1);
-      expect(provider[method].mock.calls[0][0]).toBe(action.data);
+      expect(provider[method].mock.calls[0][0]).toBe(action.payload);
       expect(next.mock.calls.length).toBe(2);
       expect(next.mock.calls[0][0]).toStrictEqual(action);
       expect(next.mock.calls[1][0]).toStrictEqual(result);
       expect(result).toStrictEqual({
-        data: { id: 3 },
+        payload: { id: 3 },
         entities: method == 'remove' ? undefined : 1,
         result: method == 'remove' ? undefined : 2,
         meta: method === 'fetch' ? {} : undefined,
@@ -108,7 +109,7 @@ describe('middleware', () => {
       }
 
       if (method != 'remove') {
-        expect(normalize.mock.calls[0][0]).toStrictEqual(action.data);
+        expect(normalize.mock.calls[0][0]).toStrictEqual(action.payload);
         expect(normalize.mock.calls[0][1]).toStrictEqual(action.entity);
       }
     });
@@ -121,12 +122,12 @@ describe('middleware', () => {
       const result = await mw.snowboxMiddleware(store)(next)(action);
 
       expect(provider[method].mock.calls.length).toBe(1);
-      expect(provider[method].mock.calls[0][0]).toBe(action.data);
+      expect(provider[method].mock.calls[0][0]).toBe(action.payload);
       expect(next.mock.calls.length).toBe(2);
       expect(next.mock.calls[0][0]).toStrictEqual(action);
       expect(next.mock.calls[1][0]).toStrictEqual(result);
       expect(result).toStrictEqual({
-        data: { id: 3 },
+        payload: { id: 3 },
         error: err,
         statusCode: 400,
       });
@@ -146,22 +147,22 @@ describe('middleware', () => {
       const action = {
         type: 'snowbox/FETCH',
         entity,
-        data: { d: 'd' },
-        success: (data, entities, result, meta, date) => (
-          { data, entities, result, meta, date }
+        payload: { d: 'd' },
+        success: (payload, entities, result, meta, date) => (
+          { payload, entities, result, meta, date }
         ),
-        failure: (data, error, statusCode) => ({ data, error, statusCode }),
+        failure: (payload, error, statusCode) => ({ payload, error, statusCode }),
       };
       const provider = action.entity.provider;
       const result = await mw.snowboxMiddleware(store)(next)(action);
 
       expect(provider.fetch.mock.calls.length).toBe(1);
-      expect(provider.fetch.mock.calls[0][0]).toBe(action.data);
+      expect(provider.fetch.mock.calls[0][0]).toBe(action.payload);
       expect(next.mock.calls.length).toBe(2);
       expect(next.mock.calls[0][0]).toStrictEqual(action);
       expect(next.mock.calls[1][0]).toStrictEqual(result);
       expect(result).toStrictEqual({
-        data: { d: 'd' },
+        payload: { d: 'd' },
         entities: undefined,
         result: 'r',
         meta: undefined,
@@ -174,7 +175,7 @@ describe('middleware', () => {
   describe('sateTimeout option', () => {
     const store = {
       getState: () => ({ snowbox: {
-        meta: { e: { '#id[3]': { __updatedAt: 100 } } },
+        collections: { e: { '#id[3]': { __updatedAt: 100 } } },
         entities: { e: { 3: { id: 3, __updatedAt: 100 } } },
       }}),
     };
@@ -202,7 +203,7 @@ describe('middleware', () => {
       expect(next.mock.calls.length).toBe(2);
     });
 
-    it('does nothing when the action explicitly ask fresh data', async () => {
+    it('does nothing when the action explicitly ask fresh payload', async () => {
       const method = 'find';
       const action = actionCreator(method.toUpperCase(), true, 11, true);
       const provider = action.entity.provider;
@@ -212,7 +213,7 @@ describe('middleware', () => {
       expect(next.mock.calls.length).toBe(2);
     });
 
-    it('does not fetch new data when the entity is fresh', async () => {
+    it('does not fetch new payload when the entity is fresh', async () => {
       const method = 'find';
       const action = actionCreator(method.toUpperCase(), true, 100);
       const provider = action.entity.provider;
@@ -222,7 +223,7 @@ describe('middleware', () => {
       expect(next.mock.calls.length).toBe(1);
     });
 
-    it('does not fetch new data when the page is fresh', async () => {
+    it('does not fetch new payload when the page is fresh', async () => {
       const method = 'fetch';
       const action = actionCreator(method.toUpperCase(), true, 100);
       const provider = action.entity[0].provider;
@@ -232,7 +233,7 @@ describe('middleware', () => {
       expect(next.mock.calls.length).toBe(1);
     });
 
-    it('fetches new data when the entity is stale', async () => {
+    it('fetches new payload when the entity is stale', async () => {
       const method = 'find';
       const action = actionCreator(method.toUpperCase(), true, 10);
       const provider = action.entity.provider;
@@ -243,7 +244,7 @@ describe('middleware', () => {
 
     });
 
-    it('fetches new data when the page is stale', async () => {
+    it('fetches new payload when the page is stale', async () => {
       const method = 'fetch';
       const action = actionCreator(method.toUpperCase(), true, 10);
       const provider = action.entity[0].provider;
@@ -254,47 +255,50 @@ describe('middleware', () => {
     });
   });
 
-  describe('shouldFetchData', () => {
+  describe('dataAlreadyExists', () => {
     const entity = {
       key: 'baz',
       singleton: true,
       staleTimeout: 10,
     };
 
-    it('returns true when the singleton is stale', () => {
-      const result = mw.shouldFetchData(
+    it('returns false when the singleton is stale', () => {
+      const result = mw.dataAlreadyExists(
         {
-          snowbox: { singletons: { baz: { a: 'b', __updatedAt: 100 } } },
+          getState: () => ({
+            snowbox: { singletons: { baz: { a: 'b', __updatedAt: 100 } } },
+          }),
         },
-        entity,
-        { data: {} }
-      );
-
-      expect(result).toBe(true);
-    });
-
-    it('returns false when the singleton is fresh', () => {
-      const result = mw.shouldFetchData(
-        {
-          snowbox: { singletons: { baz: { a: 'b', __updatedAt: 120 } } },
-        },
-        entity,
-        { data: {} }
+        { type: actions.FIND, entity, payload: {} }
       );
 
       expect(result).toBe(false);
     });
 
-    it('returns true when the state data does not have update date', () => {
-      const result = mw.shouldFetchData(
+    it('returns true when the singleton is fresh', () => {
+      const result = mw.dataAlreadyExists(
         {
-          snowbox: { singletons: { baz: { a: 'b' } } },
+          getState: () => ({
+            snowbox: { singletons: { baz: { a: 'b', __updatedAt: 120 } } },
+          }),
         },
-        entity,
-        { data: {} }
+        { type: actions.FIND, entity, payload: {} }
       );
 
       expect(result).toBe(true);
+    });
+
+    it('returns false when the state payload does not have update date', () => {
+      const result = mw.dataAlreadyExists(
+        {
+          getState: () => ({
+            snowbox: { singletons: { baz: { a: 'b' } } },
+          }),
+        },
+        { type: actions.FIND, entity, payload: {} }
+      );
+
+      expect(result).toBe(false);
     });
   });
 
@@ -314,7 +318,7 @@ describe('middleware', () => {
       });
 
       describe('both entitiesPath and fetchEntitiesPath are defined', () => {
-        it('returns the data at entitiesPath', () => {
+        it('returns the payload at entitiesPath', () => {
           const entity = { entitiesPath: 'e', fetchEntitiesPath: 'f' };
 
           expect(mw.getEntitiesData('find', entity, response))
@@ -329,7 +333,7 @@ describe('middleware', () => {
 
     describe('method is fetch', () => {
       describe('both entitiesPath and fetchEntitiesPath are defined', () => {
-        it('returns the data at entitiesPath', () => {
+        it('returns the payload at entitiesPath', () => {
           const entity = { entitiesPath: 'e', fetchEntitiesPath: 'f' };
 
           expect(mw.getEntitiesData('fetch', entity, response))
@@ -353,16 +357,16 @@ describe('middleware', () => {
     })
   });
 
-  describe('getMetaData', () => {
+  describe('getResponseMetaData', () => {
     const response = { e: 'e', f: 'f', m: 'm' };
 
     describe('method is not fetch', () => {
       it('returns undefined', () => {
         const entity = { entitiesPath: 'e', fetchEntitiesPath: 'f' };
 
-        expect(mw.getMetaData('upsert', entity, response)).toBe(undefined);
-        expect(mw.getMetaData('remove', entity, response)).toBe(undefined);
-        expect(mw.getMetaData('find', entity, response)).toBe(undefined);
+        expect(mw.getResponseMetaData('upsert', entity, response)).toBe(undefined);
+        expect(mw.getResponseMetaData('remove', entity, response)).toBe(undefined);
+        expect(mw.getResponseMetaData('find', entity, response)).toBe(undefined);
       });
     });
 
@@ -371,7 +375,7 @@ describe('middleware', () => {
         it('returns the response without fetchEntitiesPath', () => {
           const entity = { entitiesPath: 'e', fetchEntitiesPath: 'f' };
 
-          expect(mw.getMetaData('fetch', entity, response)).toStrictEqual(
+          expect(mw.getResponseMetaData('fetch', entity, response)).toStrictEqual(
             { e: 'e', m: 'm' }
           );
         });
@@ -381,7 +385,7 @@ describe('middleware', () => {
         it('returns the response without fetchEntitiesPath', () => {
           const entity = { entitiesPath: 'e' };
 
-          expect(mw.getMetaData('fetch', entity, response)).toStrictEqual(
+          expect(mw.getResponseMetaData('fetch', entity, response)).toStrictEqual(
             { f: 'f', m: 'm' }
           );
         });
@@ -391,7 +395,7 @@ describe('middleware', () => {
         it('returns the response without fetchEntitiesPath', () => {
           const entity = { fetchEntitiesPath: 'f' };
 
-          expect(mw.getMetaData('fetch', entity, response)).toStrictEqual(
+          expect(mw.getResponseMetaData('fetch', entity, response)).toStrictEqual(
             { e: 'e', m: 'm' }
           );
         });
@@ -399,7 +403,7 @@ describe('middleware', () => {
 
       describe('neither entitiesPath not fetchEntitiesPath are defined', () => {
         it('returns undefined', () => {
-          expect(mw.getMetaData('fetch', {}, response)).toStrictEqual(
+          expect(mw.getResponseMetaData('fetch', {}, response)).toStrictEqual(
             undefined
           );
         });
