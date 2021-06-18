@@ -1,4 +1,4 @@
-import { selectOne, selectMany, selectMeta } from '../src/selectors';
+import { selectOne, selectCollection, selectMeta } from '../src/selectors';
 
 const foo = { key: 'foo' };
 const bar = { key: 'bar', schema: { foo } };
@@ -111,39 +111,20 @@ describe('selectors', () => {
     });
   });
 
-  describe('selectMany', () => {
-    it('selects all the elements when no filter is defined', () => {
-      expect(selectMany(foo)()(state)).toStrictEqual([
-        { id: 1, f: 'a' },
-        { id: 2, f: 'b' },
-        { id: 3, f: 'c' },
-      ]);
-      expect(selectMany(baz)()(state)).toStrictEqual([
-        { id: 7, z: [], bar: [1, 4] },
-        { id: 9, z: [0], bar: [] },
-      ]);
-      expect(selectMany(bar)()(state)).toStrictEqual([
-        { id: 1, b: 1, foo: 1 },
-      ]);
-      expect(selectMany(faz)()(state)).toStrictEqual([
-        { id: 5, w: false },
-        { id: 6, w: true },
-      ]);
-    });
-
+  describe('selectCollection', () => {
     it('selects filtered elements', () => {
-      expect(selectMany(foo)({ page: 2 })(state)).toStrictEqual([
+      expect(selectCollection(foo)(state, { page: 2 })).toStrictEqual([
         { id: 1, f: 'a' },
         { id: 2, f: 'b' },
       ]);
     });
 
     it('returns an empty array when the entity in not in state', () => {
-      expect(selectMany({ key: 'no' })()(state)).toStrictEqual([]);
+      expect(selectCollection({ key: 'no' })(state)).toStrictEqual([]);
     });
 
     it('selects and hydrates the result', () => {
-      expect(selectMany(baz, 1)()(state)).toStrictEqual([
+      expect(selectCollection(baz, 1)(state)).toStrictEqual([
         {
           id: 7,
           z: [],
@@ -160,12 +141,12 @@ describe('selectors', () => {
 
   describe('selectMeta', () => {
     it('selects nothing when the filter is not in state', () => {
-      expect(selectMeta(foo)({ page: 11 })(state)).toBe(undefined);
+      expect(selectMeta(foo)(state, { page: 11 })).toBe(undefined);
     });
 
     it('selects metadata when the filter is valid', () => {
-      expect(selectMeta(foo)({ page: 2 })(state)).toStrictEqual({ count: 12 });
-      expect(selectMeta(bar)({ page: 1 })(state)).toStrictEqual(undefined);
+      expect(selectMeta(foo)(state, { page: 2 })).toStrictEqual({ count: 12 });
+      expect(selectMeta(bar)(state, { page: 1 })).toStrictEqual(undefined);
     });
   });
 });

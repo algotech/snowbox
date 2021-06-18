@@ -27,7 +27,7 @@ const entitiesReducer = (state = {}, action) => {
     };
     const id = typeof action.payload === 'number' ?
       action.payload :
-      action.payload[action.entity.idAttribute];
+      action.payload[action.entity.idField];
     delete newState[action.entity.key][id];
 
     return newState;

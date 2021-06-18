@@ -1,23 +1,34 @@
 import { renderHook, act } from '@testing-library/react-hooks';
 
 import { useList } from '../src/hooks';
+import Response from '../src/Response';
 
 let items = [];
 let pageSize = 2;
 
-const fetchImplementation = ({ page }) => Promise.resolve({
+const options = {
+  idField: 'id',
+  entityPath: 'data',
+  entitiesPath: 'data',
+  entitiesFieldName: 'data',
+  hasMeta: true,
+  metaPath: '',
+  metaFieldName: 'meta',
+};
+
+const fetchImplementation = ({ page }) => Promise.resolve(new Response({
   data: items.slice((page - 1) * pageSize, page * pageSize),
   total: items.length,
-});
+}, options, true));
 const upsertImplementation = (item) => new Promise((resolve) => {
   items.push(item);
 
-  resolve({ ok: true, data: { hm: true } });
+  resolve(new Response({ ok: true, data: { hm: true } }, options));
 });
 const removeImplementation = ({ index }) => new Promise((resolve) => {
   items.splice(index, 1);
 
-  resolve({});
+  resolve(new Response({}, options));
 });
 
 describe('hooks', () => {
@@ -29,7 +40,6 @@ describe('hooks', () => {
         upsert: jest.fn(upsertImplementation),
         remove: jest.fn(removeImplementation),
       },
-      entitiesPath: 'data',
     };
 
     beforeEach(() => {

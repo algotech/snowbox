@@ -1,22 +1,10 @@
+import _ from 'lodash';
+
 import { contentTypes } from './constants';
-
-const removeObjectField = (obj, field) => {
-  if (typeof obj !== 'object') {
-    return undefined;
-  }
-
-  const newObj = { ...obj };
-  delete newObj[field];
-
-  return newObj;
-};
-
-const objGet = (object, field, defaultVal) => (
-  typeof object[field] === 'undefined' ? defaultVal : object[field]
-);
+import Response from './Response';
 
 const provider = (api) => (providedOptions = {}) => {
-  if (typeof providedOptions.particle != 'string' ||
+  if (typeof providedOptions.particle !== 'string' ||
     providedOptions.particle === ''
   ) {
     throw new Error('"particle" must be a nonempty string');
@@ -24,24 +12,36 @@ const provider = (api) => (providedOptions = {}) => {
 
   const options = {
     idField: 'id',
+
+    // Response
+    entityPath: 'data',
+    entitiesPath: 'data',
+    entitiesFieldName: 'records',
+    hasMeta: true,
+    metaPath: '',
+    metaFieldName: 'meta',
+
     // Find
     findPath: (filter, { particle, idField }) => (
       `/${particle}/${typeof filter === 'object' ? filter[idField] : filter}`
     ),
-    findParams: (filter, { idField }) => removeObjectField(filter, idField),
+    findParams: (filter, { idField }) => _.omit(filter, idField),
+
     // Fetch
     fetchPath: (filter, { particle }) => `/${options.particle}`,
-    fetchParams: (filter, { idField }) => removeObjectField(filter, idField),
+    fetchParams: (filter, { idField }) => _.omit(filter, idField),
+
     // Upsert
     createMethod: 'post',
     updateMethod: 'put',
     upsertContentType: contentTypes.JSON,
     upsertPath: (data, { particle, idField }) => (
-      `/${particle}${data[idField] ? '/' : ''}${objGet(data, idField, '')}`
+      `/${particle}${data[idField] ? '/' : ''}${_.get(data, idField, '')}`
     ),
     upsertMethod: (data, { idField, createMethod, updateMethod }) => (
       data[idField] ? updateMethod : createMethod
     ),
+
     // Remove
     removeMethod: 'remove',
     removePath: (data, { particle, idField } = {}) => (
@@ -51,30 +51,44 @@ const provider = (api) => (providedOptions = {}) => {
     ...providedOptions,
   };
 
-  const find = (filter) => api.get(
-    options.findPath(filter, options),
-    options.findParams(filter, options)
-  );
+  const find = async (filter) => {
+    const response = await api.get(
+      options.findPath(filter, options),
+      options.findParams(filter, options)
+    );
 
-  const fetch = (filter) => api.get(
-    options.fetchPath(filter, options),
-    options.fetchParams(filter, options)
-  );
+    return new Response(response, options);
+  };
 
-  const upsert = (data, params) => {
+  const fetch = async (filter) => {
+    const response = await api.get(
+      options.fetchPath(filter, options),
+      options.fetchParams(filter, options)
+    );
+
+    return new Response(response, options, true);
+  };
+
+  const upsert = async (data, params) => {
     const method = options.upsertMethod(data, options);
 
-    return api[method](
+    const response = await api[method](
       options.upsertPath(data, options),
       data,
       params,
       options.upsertContentType
     );
+
+    return new Response(response, options);
   };
 
-  const remove = (data) => api[options.removeMethod](
-    options.removePath(data, options)
-  );
+  const remove = async (data) => {
+    const response = await api[options.removeMethod](
+      options.removePath(data, options)
+    );
+
+    return new Response(response, options);
+  };
 
   return {
     find,
