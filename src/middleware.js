@@ -41,7 +41,7 @@ export const selectExistingData = (store, action) => {
   }
 
   const state = selectEntities(store.getState());
-  const id = action.payload[entity.idAttribute];
+  const id = action.payload[entity.idField];
 
   return state?.[entity.key]?.[id];
 };
@@ -71,38 +71,6 @@ export const dataAlreadyExists = (store, action) => {
   return Date.now() - state.__updatedAt < entity.staleTimeout;
 };
 
-export const getEntitiesData = (method, entity, response) => {
-  if (method === 'fetch' && entity.fetchEntitiesPath) {
-    return response[entity.fetchEntitiesPath];
-  }
-
-  if (entity.entitiesPath) {
-    return response[entity.entitiesPath];
-  }
-
-  return response;
-};
-
-export const getResponseMetaData = (method, entity, response) => {
-  if (method !== 'fetch') {
-    return;
-  }
-
-  if (!entity.fetchEntitiesPath && !entity.entitiesPath) {
-    return;
-  }
-
-  const meta = { ...response };
-
-  if (entity.fetchEntitiesPath) {
-    delete meta[entity.fetchEntitiesPath];
-  } else if (entity.entitiesPath) {
-    delete meta[entity.entitiesPath];
-  }
-
-  return meta;
-};
-
 const isHandledAction = action => [
   actions.UPSERT,
   actions.REMOVE,
@@ -121,31 +89,30 @@ const getSuccessActionParams = (action, response) => {
   const method = getRequestMethodFromAction(action);
 
   if (method === 'remove') {
-    return [action.payload];
+    return [action.payload, undefined, response.original];
   }
 
   const entity = getEntityFromAction(action);
 
   if (entity.singleton) {
-    return [action.payload, undefined, response, undefined, Date.now()];
+    return [
+      action.payload, undefined, response.data, undefined, Date.now(),
+    ];
   }
-
-  const responseMeta = getResponseMetaData(method, entity, response);
 
   if (action?.meta?.isListHook) {
     return [
       action.payload,
       undefined,
-      response?.[entity.fetchEntitiesPath || entity.entitiesPath],
-      responseMeta,
+      response.data,
+      response.meta,
       Date.now(),
     ];
   }
 
-  const entitiesData = getEntitiesData(method, entity, response);
-  const { entities, result } = normalize(entitiesData, action.entity);
+  const { entities, result } = normalize(response.data, action.entity);
 
-  return [action.payload, entities, result, responseMeta, Date.now()];
+  return [action.payload, entities, result, response.meta, Date.now()];
 };
 
 export const snowboxMiddleware = store => next => async action => {

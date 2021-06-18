@@ -2,35 +2,46 @@ import { normalize } from 'normalizr';
 
 import { actions } from '../src/constants';
 import * as mw from '../src/middleware';
+import Response from '../src/Response';
 
 jest.mock('normalizr');
 
 const FROZEN_TIME = 123;
 
+const options = {
+  entityPath: 'e',
+  entitiesFieldName: 'e',
+  entitiesPath: 'e',
+  metaPath: 'm',
+  hasMeta: true,
+};
+
 const err = new Error('Bad request');
 err.status = 400;
 
-const request = success => async d => {
+const request = (success, isFetch) => async d => {
   if (success) {
-    return { e: { ...d } };
+    return new Response({ e: { ...d }, m: 'meta' }, options, isFetch);
   }
 
   throw err;
 };
 
-const mockRequest = success => jest.fn(request(success));
+const mockRequest = (success, isFetch) => jest.fn(request(success, isFetch));
+
+const providerCreator = (success) => ({
+  upsert: mockRequest(success),
+  remove: mockRequest(success),
+  fetch: mockRequest(success, true),
+  find: mockRequest(success),
+  options,
+});
 
 const getEntity = (success, staleTimeout) => ({
-  provider: {
-    upsert: mockRequest(success),
-    remove: mockRequest(success),
-    fetch: mockRequest(success),
-    find: mockRequest(success),
-  },
+  provider: providerCreator(success),
+  idField: 'id',
   staleTimeout,
   key: 'e',
-  idAttribute: 'id',
-  entitiesPath: 'e',
 });
 
 const actionCreator = (type, success, staleTimeout, refresh) => ({
@@ -78,9 +89,12 @@ describe('middleware', () => {
     expect(next.mock.calls[0][0]).toStrictEqual(action);
   });
 
-  describe.each(
-    ['upsert', 'remove', 'find', 'fetch']
-  )('handles %s action', method => {
+  describe.each([
+    ['upsert', { id: 3 }],
+    ['remove', { e: { id: 3 }, m: 'meta' }],
+    ['find', { id: 3 }],
+    ['fetch', { id: 3 }],
+  ])('handles %s action', (method, response) => {
     const store = { getState: () => {} };
 
     test('when succeeds', async () => {
@@ -98,8 +112,8 @@ describe('middleware', () => {
       expect(result).toStrictEqual({
         payload: { id: 3 },
         entities: method == 'remove' ? undefined : 1,
-        result: method == 'remove' ? undefined : 2,
-        meta: method === 'fetch' ? {} : undefined,
+        result: method == 'remove' ? { e: { id: 3 }, m: 'meta' } : 2,
+        meta: method == 'fetch' ? 'meta' : undefined,
         date: method == 'remove' ? undefined : FROZEN_TIME,
       });
       expect(normalize.mock.calls.length).toBe(method == 'remove' ? 0 : 1);
@@ -109,7 +123,7 @@ describe('middleware', () => {
       }
 
       if (method != 'remove') {
-        expect(normalize.mock.calls[0][0]).toStrictEqual(action.payload);
+        expect(normalize.mock.calls[0][0]).toStrictEqual(response);
         expect(normalize.mock.calls[0][1]).toStrictEqual(action.entity);
       }
     });
@@ -142,7 +156,7 @@ describe('middleware', () => {
       const entity = {
         key: 's',
         singleton: true,
-        provider: { fetch: jest.fn(async () => 'r') },
+        provider: providerCreator(true),
       };
       const action = {
         type: 'snowbox/FETCH',
@@ -164,7 +178,7 @@ describe('middleware', () => {
       expect(result).toStrictEqual({
         payload: { d: 'd' },
         entities: undefined,
-        result: 'r',
+        result: { d: 'd' },
         meta: undefined,
         date: FROZEN_TIME,
       });
@@ -203,15 +217,18 @@ describe('middleware', () => {
       expect(next.mock.calls.length).toBe(2);
     });
 
-    it('does nothing when the action explicitly ask fresh payload', async () => {
-      const method = 'find';
-      const action = actionCreator(method.toUpperCase(), true, 11, true);
-      const provider = action.entity.provider;
-      await mw.snowboxMiddleware(store)(next)(action);
+    it(
+      'does nothing when the action explicitly asks fresh payload',
+      async () => {
+        const method = 'find';
+        const action = actionCreator(method.toUpperCase(), true, 11, true);
+        const provider = action.entity.provider;
+        await mw.snowboxMiddleware(store)(next)(action);
 
-      expect(provider[method].mock.calls.length).toBe(1);
-      expect(next.mock.calls.length).toBe(2);
-    });
+        expect(provider[method].mock.calls.length).toBe(1);
+        expect(next.mock.calls.length).toBe(2);
+      }
+    );
 
     it('does not fetch new payload when the entity is fresh', async () => {
       const method = 'find';
@@ -299,115 +316,6 @@ describe('middleware', () => {
       );
 
       expect(result).toBe(false);
-    });
-  });
-
-  describe('getEntitiesData', () => {
-    const response = { e: 'e', f: 'f', m: 'm' };
-
-    describe('method is not fetch', () => {
-      describe('neither entitiesPath not fetchEntitiesPath is defined', () => {
-        it('returns the response', () => {
-          expect(mw.getEntitiesData('find', {}, response))
-            .toStrictEqual(response);
-          expect(mw.getEntitiesData('upsert', {}, response))
-            .toStrictEqual(response);
-          expect(mw.getEntitiesData('remove', {}, response))
-            .toStrictEqual(response);
-        });
-      });
-
-      describe('both entitiesPath and fetchEntitiesPath are defined', () => {
-        it('returns the payload at entitiesPath', () => {
-          const entity = { entitiesPath: 'e', fetchEntitiesPath: 'f' };
-
-          expect(mw.getEntitiesData('find', entity, response))
-            .toStrictEqual(response.e);
-          expect(mw.getEntitiesData('upsert', entity, response))
-            .toStrictEqual(response.e);
-          expect(mw.getEntitiesData('remove', entity, response))
-            .toStrictEqual(response.e);
-        });
-      });
-    });
-
-    describe('method is fetch', () => {
-      describe('both entitiesPath and fetchEntitiesPath are defined', () => {
-        it('returns the payload at entitiesPath', () => {
-          const entity = { entitiesPath: 'e', fetchEntitiesPath: 'f' };
-
-          expect(mw.getEntitiesData('fetch', entity, response))
-            .toStrictEqual(response.f);
-        });
-      });
-
-      describe('only entitiesPath is defined', () => {
-        it('returns the response', () => {
-          expect(mw.getEntitiesData('fetch', { entitiesPath: 'e' }, response))
-            .toStrictEqual(response.e);
-        });
-      });
-
-      describe('neither entitiesPath not fetchEntitiesPath is defined', () => {
-        it('returns the response', () => {
-          expect(mw.getEntitiesData('fetch', {}, response))
-            .toStrictEqual(response);
-        });
-      });
-    })
-  });
-
-  describe('getResponseMetaData', () => {
-    const response = { e: 'e', f: 'f', m: 'm' };
-
-    describe('method is not fetch', () => {
-      it('returns undefined', () => {
-        const entity = { entitiesPath: 'e', fetchEntitiesPath: 'f' };
-
-        expect(mw.getResponseMetaData('upsert', entity, response)).toBe(undefined);
-        expect(mw.getResponseMetaData('remove', entity, response)).toBe(undefined);
-        expect(mw.getResponseMetaData('find', entity, response)).toBe(undefined);
-      });
-    });
-
-    describe('method is fetch', () => {
-      describe('both entitiesPath and fetchEntitiesPath are defined', () => {
-        it('returns the response without fetchEntitiesPath', () => {
-          const entity = { entitiesPath: 'e', fetchEntitiesPath: 'f' };
-
-          expect(mw.getResponseMetaData('fetch', entity, response)).toStrictEqual(
-            { e: 'e', m: 'm' }
-          );
-        });
-      });
-
-      describe('only entitiesPath is defined', () => {
-        it('returns the response without fetchEntitiesPath', () => {
-          const entity = { entitiesPath: 'e' };
-
-          expect(mw.getResponseMetaData('fetch', entity, response)).toStrictEqual(
-            { f: 'f', m: 'm' }
-          );
-        });
-      });
-
-      describe('only fetchEntitiesPath is defined', () => {
-        it('returns the response without fetchEntitiesPath', () => {
-          const entity = { fetchEntitiesPath: 'f' };
-
-          expect(mw.getResponseMetaData('fetch', entity, response)).toStrictEqual(
-            { e: 'e', m: 'm' }
-          );
-        });
-      });
-
-      describe('neither entitiesPath not fetchEntitiesPath are defined', () => {
-        it('returns undefined', () => {
-          expect(mw.getResponseMetaData('fetch', {}, response)).toStrictEqual(
-            undefined
-          );
-        });
-      });
     });
   });
 });

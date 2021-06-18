@@ -3,7 +3,7 @@ import { actions } from '../src/constants';
 import { entity } from '../src/entity';
 import { success, failure, clearAll } from '../src/actions';
 
-const foo = entity('foo', undefined, undefined, { idAttribute: 'key' });
+const foo = entity('foo', undefined, undefined, { idField: 'key' });
 const bar = entity('bar');
 const baz = entity('baz', undefined, undefined, { singleton: true });
 
