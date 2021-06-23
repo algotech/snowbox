@@ -28,7 +28,7 @@ const entitiesReducer = (state = {}, action) => {
 
     return produce(state, draftState => {
       delete draftState[action.entity.key][id];
-    })
+    });
   }
 
   if (!action.entities) {
