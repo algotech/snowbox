@@ -1,10 +1,11 @@
 import { selectOne, selectCollection, selectMeta } from '../src/selectors';
+import { entity } from '../src/entity';
 
-const foo = { key: 'foo' };
-const bar = { key: 'bar', schema: { foo } };
-const baz = { key: 'baz', schema: { bar: [bar] } };
-const faz = { key: 'faz' };
-const sin = { key: 'sin', singleton: true };
+const foo = entity('foo');
+const bar = entity('bar', undefined, { foo });
+const baz = entity('baz', undefined,{ bar: [bar] });
+const faz = entity('faz');
+const sin = entity('sin', undefined, undefined, { singleton: true });
 
 const state = {
   snowbox: {
@@ -70,24 +71,24 @@ const state = {
 describe('selectors', () => {
   describe('selectOne', () => {
     it('selects one entity without hydration', () => {
-      expect(selectOne(foo)(2)(state)).toStrictEqual({ id: 2, f: 'b' });
-      expect(selectOne(baz)(7)(state))
+      expect(selectOne(foo)(state, { id: 2 })).toStrictEqual({ id: 2, f: 'b' });
+      expect(selectOne(baz)(state, { id: 7 }))
         .toStrictEqual({ id: 7, z: [], bar: [1, 4] });
     });
 
     it('selects one entity and hydrates the result', () => {
-      expect(selectOne(foo, 1)(1)(state)).toStrictEqual({ id: 1, f: 'a' });
-      expect(selectOne(bar, 1)(1)(state)).toStrictEqual(
+      expect(selectOne(foo, 1)(state, { id: 1 })).toStrictEqual({ id: 1, f: 'a' });
+      expect(selectOne(bar, 1, 'x')(state, { x: 1 })).toStrictEqual(
         { id: 1, b: 1, foo: { id: 1, f: 'a' } }
       );
-      expect(selectOne(baz, 1)(7)(state)).toStrictEqual(
+      expect(selectOne(baz, 1)(state, { id: 7 })).toStrictEqual(
         {
           id: 7,
           z: [],
           bar: [{ id: 1, b: 1, foo: 1 }, { id: 4, b: 3, foo: 3 }],
         }
       );
-      expect(selectOne(baz, 2)(7)(state)).toStrictEqual(
+      expect(selectOne(baz, 2)(state, { id: 7 })).toStrictEqual(
         {
           id: 7,
           z: [],
@@ -100,11 +101,11 @@ describe('selectors', () => {
     });
 
     it('selects null when the entity is not present', () => {
-      expect(selectOne({ key: 'nope' })(3)(state)).toBe(null);
+      expect(selectOne({ key: 'nope' })(state, { id: 3 })).toBe(null);
     });
 
     it('selects one singleton', () => {
-      expect(selectOne(sin)()(state)).toStrictEqual({
+      expect(selectOne(sin)(state)).toStrictEqual({
         si: 'ng',
         le: 'ton',
       });

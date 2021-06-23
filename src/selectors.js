@@ -51,7 +51,7 @@ const applyHydration = (entity, levels = 0) => entities => data => {
   return newData;
 };
 
-export const selectOne = (entity, hydrationLevels = 0) => id => {
+export const selectOne = (entity, hydrationLevels = 0, idAttribute) => {
   if (entity.singleton) {
     return createSelector(
       selectSingletons,
@@ -63,7 +63,8 @@ export const selectOne = (entity, hydrationLevels = 0) => id => {
 
   return createSelector(
     selectEntities,
-    entities => entities[entity.key] ?
+    (state, props) => props[idAttribute || entity.idField],
+    (entities, id) => entities[entity.key] ?
       hydrate(entities)(entities[entity.key][id]) :
       null
   );
