@@ -1,4 +1,5 @@
 import { combineReducers } from 'redux';
+import produce from 'immer';
 
 import { success, failure } from './actions';
 import { buildKey } from './utils';
@@ -21,38 +22,32 @@ const entitiesReducer = (state = {}, action) => {
   }
 
   if (action.type === success(actions.REMOVE)) {
-    const newState = {
-      ...state,
-      [action.entity.key]: { ...state[action.entity.key] },
-    };
     const id = typeof action.payload === 'number' ?
       action.payload :
       action.payload[action.entity.idField];
-    delete newState[action.entity.key][id];
 
-    return newState;
+    return produce(state, draftState => {
+      delete draftState[action.entity.key][id];
+    });
   }
 
   if (!action.entities) {
     return state;
   }
 
-  const newState = { ...state };
+  return produce(state, draftState => {
+    for (const entity in action.entities) {
+      draftState[entity] = draftState[entity] || {};
 
-  for (const entity in action.entities) {
-    newState[entity] = {
-      ...(newState[entity] || {}),
-    };
-    for (const id in action.entities[entity]) {
-      newState[entity][id] = {
-        ...((newState[entity] || {})[id] || {}),
-        ...action.entities[entity][id],
-        __updatedAt: action.date,
-      };
+      for (const id in action.entities[entity]) {
+        draftState[entity][id] = {
+          ...draftState[entity][id],
+          ...action.entities[entity][id],
+          __updatedAt: action.date,
+        };
+      }
     }
-  }
-
-  return newState;
+  });
 };
 
 const fetchEntityCollectionsReducer = (state = {}, action) => {
@@ -81,10 +76,9 @@ const fetchEntityCollectionsReducer = (state = {}, action) => {
 export const entityCollectionsReducer = (state = {}, action) => {
   const key = buildKey(action.payload);
 
-  return {
-    ...state,
-    [key]: fetchEntityCollectionsReducer(state[key], action),
-  };
+  return produce(state, draftState => {
+    draftState[key] = fetchEntityCollectionsReducer(state[key], action);
+  });
 };
 
 const collectionsReducer = (state = {}, action) => {
@@ -104,10 +98,12 @@ const collectionsReducer = (state = {}, action) => {
 
   const entity = action.entity[0];
 
-  return {
-    ...state,
-    [entity.key]: entityCollectionsReducer(state[entity.key], action),
-  };
+  return produce(state, draftState => {
+    draftState[entity.key] = entityCollectionsReducer(
+      state[entity.key],
+      action
+    );
+  });
 };
 
 const singletonsReducer = (state = {}, action) => {
@@ -119,20 +115,18 @@ const singletonsReducer = (state = {}, action) => {
     return state;
   }
 
-  const newState = { ...state };
-
   if (action.type === success(actions.REMOVE)) {
-    delete newState[action.entity.key];
-
-    return newState;
+    return produce(state, draftState => {
+      delete draftState[action.entity.key];
+    });
   }
 
-  newState[action.entity.key] = {
-    ...action.result,
-    __updatedAt: action.date,
-  };
-
-  return newState;
+  return produce(state, draftState => {
+    draftState[action.entity.key] = {
+      ...action.result,
+      __updatedAt: action.date,
+    };
+  });
 };
 
 export const rootReducer = combineReducers({
