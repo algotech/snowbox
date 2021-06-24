@@ -57,13 +57,15 @@ const buildBody = (data, contentType) => {
   }
 };
 
-const api = (providedOptions = {}) => {
+const validateBaseUrl = (providedOptions) => {
   if (typeof providedOptions.baseUrl !== 'string' ||
     providedOptions.baseUrl === ''
   ) {
     throw new Error('[Snowbox API] Base API url must be defined');
   }
+};
 
+const validateAuthOptions = (providedOptions) => {
   const isTokenHeaderValid = typeof providedOptions.tokenHeader === 'string' &&
     providedOptions.tokenHeader.length > 0;
   const isGetAuthTokenValid = typeof providedOptions.getAuthToken === 'function';
@@ -72,10 +74,20 @@ const api = (providedOptions = {}) => {
       '[Snowbox API] Both tokenHeader and getAuthToken must be provided'
     );
   }
+};
 
-  const options = {
-    ...providedOptions,
-  };
+const setupOptions = (providedOptions) => ({
+  baseUrl: null,
+  tokenHeader: null,
+  getAuthToken: null,
+  ...providedOptions,
+});
+
+const api = (providedOptions = {}) => {
+  validateBaseUrl(providedOptions);
+  validateAuthOptions(providedOptions);
+
+  const options = setupOptions(providedOptions);
 
   const get = (path, params) => request('GET', path, params);
 
