@@ -32,3 +32,97 @@ Snowbox is a small collection of tools that hide the repetitiveness in your code
 	- [Constants](#constants)
 	- [Form](#form)
 - [Exmples](#examples)
+
+# Install
+
+Install from the NPM repository using yarn or npm:
+
+```shell
+yarn add snowbox
+```
+
+```shell
+npm install snowbox
+```
+
+## Quick Start
+
+1) Add the snowbox reducer and middleware to your store. The key where the snowbox reducer is mounted must be `snowbox`.
+```javascript
+// File: app-store.js
+
+import { createStore, combineReducers, applyMiddleware } from 'redux';
+import { snowboxReducer, snowboxMiddleware } from 'snowbox';
+
+const store = createStore(
+	combineReducers({
+		snowbox: snowboxReducer,
+		/* app reducers */
+	}),
+	preloadedState,
+	applyMiddleware(
+		snowboxMiddleware,
+		/* app middlewares */
+	)
+);
+```
+
+2) Configure the `api` and `provider` services.
+```javascript
+// File: app-provider.js
+
+import { api, provider } from 'snowbox';
+
+import store from './app-store';
+import selectAuthToken from './app-selectors';
+
+export const appApi = api({
+	baseUrl: 'http://localhost:3000/api',
+	tokenHeader: 'auth-token',
+	getAuthToken: () => selectAuthToken(store.getState()), // when your token is stored in the state
+});
+
+export const appProvider = provider(api);
+
+export default appProvider;
+```
+
+3) Define an entity
+```javascript
+// File: entities/todo.js
+
+import { entity } from 'snowbox';
+
+import appProvider from '../app-provider';
+
+export const todoProvider = appProvider({
+	particle: 'todos',
+});
+
+export const todo = entity('todos', todoProvider);
+
+export default todo;
+```
+
+4) Build your awesome app
+```javascript
+import React, { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetch, selectCollection } from 'snowbox';
+
+import todo from 'entities/todo'; // Import the todo entity
+import Todo from './Todo';
+
+const todosSelector = selectCollection(todo); // Create the selector for todos
+
+export default function MyTodos({ filter }) {
+	const dispatch = useDispatch();
+	const todos = useSelector(todosSelector); // Select your todos
+	
+	useEffect(() => {
+		dispatch(fetch(todo)(filter)); // Request todos
+	}, [dispatch, fetch, todo, filter]);
+	
+	return todos.map(item => <Todo key={item.id} todo={item} />);
+}
+```
