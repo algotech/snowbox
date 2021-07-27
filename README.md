@@ -35,12 +35,6 @@ Snowbox is a small collection of tools that hide the repetitiveness in your code
 
 # Install
 
-Install from the NPM repository using yarn or npm:
-
-```shell
-yarn add snowbox
-```
-
 ```shell
 npm install snowbox
 ```
