@@ -25,7 +25,8 @@ const validateUnique = (theTodo) => Object.values(todosRepo)
   ), true);
 
 app.get('/todos', (req, res) => {
-  const page = req?.query?.page || 1;
+  const page = parseInt(req?.query?.page || 1);
+  const pageSize = parseInt(req?.query?.pageSize || PAGE_SIZE);
   const filter = req?.query?.filter || 'pending';
 
 
@@ -45,7 +46,7 @@ app.get('/todos', (req, res) => {
 
   const todos = filteredTodos
     .sort((a, b) => a.date > b.date ? -1 : 1)
-    .slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+    .slice((page - 1) * pageSize, page * pageSize);
 
   res.json({
     data: todos,

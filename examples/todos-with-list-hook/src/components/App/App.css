@@ -1,5 +1,10 @@
+body, #root {
+  height: 100%;
+}
+
 .App {
-  height: 100vh;
+  height: 100%;
+  min-height: 100vh;
   text-align: center;
   background-color: #282c34;
   display: flex;
@@ -15,6 +20,6 @@
 }
 
 .App-header {
-  min-height: 500px;
+  min-height: 300px;
   justify-content: center;
 }

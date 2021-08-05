@@ -16,6 +16,7 @@
     "react-scripts": "4.0.3",
     "redux": "^4.0.5",
     "redux-thunk": "^2.3.0",
+    "snowbox": "^1.0.0",
     "web-vitals": "^1.0.1"
   },
   "scripts": {
@@ -44,9 +45,9 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-optional-chaining": "^7.13.8",
-    "@babel/plugin-syntax-jsx": "^7.12.13",
-    "@babel/preset-env": "^7.13.10",
-    "@babel/preset-react": "^7.12.13"
+    "@babel/plugin-syntax-jsx": "^7.14.5",
+    "@babel/preset-env": "^7.14.9",
+    "@babel/preset-react": "^7.14.5"
   },
   "presets": [
     "@babel/preset-env",

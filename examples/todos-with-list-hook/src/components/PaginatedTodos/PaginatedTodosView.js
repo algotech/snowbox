@@ -1,16 +1,27 @@
 import React from 'react';
 
-import Todos from '../Todos';
-
+import AddTodo from './AddTodo';
 import Filters from './Filters';
+import Todos from './Todos';
 import Pagination from './Pagination';
 import './PaginatedTodos.css';
 
-const PaginatedTodosView = ({ page, pages, setPage, filter, setFilter }) => (
+const PaginatedTodosView = ({
+  todos,
+  page,
+  pages,
+  setPage,
+  filter,
+  setFilter,
+  upsert,
+  remove,
+}) => (
   <>
+    <AddTodo {...{ upsert }} />
+
     <Filters filter={filter} setFilter={setFilter} />
 
-    <Todos page={page} filter={filter} />
+    <Todos {...{ todos, filter, upsert, remove }} />
 
     <Pagination {...{ pages, page, setPage }} />
   </>

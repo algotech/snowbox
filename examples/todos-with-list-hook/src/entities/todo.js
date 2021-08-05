@@ -1,6 +1,6 @@
-import { entity } from '../snowbox/src';
+import { entity } from 'snowbox';
 
-import provider from '../snowbox/provider';
+import provider from '../provider';
 
 const todosProvider = provider({
   particle: 'todos',

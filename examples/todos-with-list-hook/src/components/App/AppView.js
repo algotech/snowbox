@@ -1,4 +1,3 @@
-import AddTodo from '../AddTodo';
 import PaginatedTodos from '../PaginatedTodos';
 
 import logo from './logo.png';
@@ -12,7 +11,6 @@ const AppView = () => (
       <p>Todos</p>
     </header>
 
-    <AddTodo />
     <PaginatedTodos />
 
   </div>

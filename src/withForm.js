@@ -24,7 +24,7 @@ const withForm = ({
         firstRender.current = false;
         setState(formService.validate(state));
       }
-    });
+    }, []);
 
     const onChange = (field, value) => {
       setState(formService.handleChange(state, field, value));
