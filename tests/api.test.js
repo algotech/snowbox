@@ -1,51 +1,9 @@
+import axios from 'axios';
+
 import api from '../src/api';
 import { contentTypes } from '../src/constants';
 
-const buildResponse = (success, hasData, hasMessage) => {
-  const response = { response: 'obj' };
-  if (hasData) {
-    response.data = { body: 'here' };
-  }
-  if (hasMessage) {
-    if (hasData) {
-      response.data.message = success ? 'good' : 'bad';
-    } else {
-      response.message = success ? 'good' : 'bad';
-    }
-  } else {
-    response
-  }
-
-  return response;
-};
-
-const mockXhr = (success, isJson, hasData, hasMessage) => {
-  const xhrMockObj = {
-    open: jest.fn(),
-    send: jest.fn(),
-    setRequestHeader: jest.fn(),
-    readyState: 1,
-    status,
-  };
-
-  const xhrMockClass = () => xhrMockObj;
-
-  global.XMLHttpRequest = jest.fn().mockImplementation(xhrMockClass);
-
-  setTimeout(() => {
-    xhrMockObj.onload();
-  }, 0);
-
-  setTimeout(() => {
-    xhrMockObj.readyState = 4;
-    xhrMockObj.status = success ? 200 : 400;
-    const response = buildResponse(success, hasData, hasMessage);
-    xhrMockObj.responseText = isJson ? JSON.stringify(response) : response;
-    xhrMockObj.onload();
-  }, 1);
-
-  return xhrMockObj;
-}
+jest.mock('axios');
 
 describe('api', () => {
   describe('function', () => {
@@ -114,209 +72,193 @@ describe('api', () => {
 
     beforeAll(() => {
       testApi = api({
-        baseUrl: 'base',
+        baseUrl: 'http://localhost:3000',
         tokenHeader: 'auth',
         getAuthToken: () => 'token',
       });
     });
 
     it('makes GET requests', async () => {
-      const xhr = mockXhr(true, true, true, false);
+      const response = { ok: true };
+      axios.get.mockResolvedValue(response);
 
-      const result = await testApi.get('/path');
+      const result = await testApi.get('/path1');
 
-      expect(xhr.open.mock.calls.length).toBe(1);
-      expect(xhr.open.mock.calls[0][0]).toBe('GET');
-      expect(xhr.open.mock.calls[0][1]).toBe('base/path');
-      expect(xhr.open.mock.calls[0][2]).toBe(true);
-      expect(xhr.setRequestHeader.mock.calls.length).toBe(2);
-      expect(xhr.setRequestHeader.mock.calls[0][0]).toBe('Content-type');
-      expect(xhr.setRequestHeader.mock.calls[0][1])
-        .toBe('application/json; charset=utf-8');
-      expect(xhr.setRequestHeader.mock.calls[1][0]).toBe('auth');
-      expect(xhr.setRequestHeader.mock.calls[1][1]).toBe('token');
-      expect(xhr.send.mock.calls.length).toBe(1);
-      expect(xhr.send.mock.calls[0][0]).toBe(undefined);
-      expect(result).toStrictEqual({ response: 'obj', data: { body: 'here' } });
+      expect(result).toStrictEqual(response);
+      expect(axios.get).toHaveBeenLastCalledWith(
+        '/path1',
+        {
+          baseUrl: 'http://localhost:3000',
+          data: undefined,
+          headers: {
+            'Content-type': 'application/json; charset=utf-8',
+            'auth': 'token',
+          },
+        }
+      );
     });
 
-    it ('throws then the api responds with an error', async () => {
-      const xhr = mockXhr(false, true, false, true);
-      let result, error;
+    it('throws then the api responds with an error', async () => {
+      axios.get.mockImplementation(() => Promise.reject('bad'));
 
-      try {
-        result = await testApi.get('/path', { a: 1 });
-      } catch (err) {
-        error = err;
-      }
-
-      expect(xhr.open.mock.calls.length).toBe(1);
-      expect(xhr.open.mock.calls[0][0]).toBe('GET');
-      expect(xhr.open.mock.calls[0][1]).toBe('base/path?a=1');
-      expect(xhr.open.mock.calls[0][2]).toBe(true);
-      expect(xhr.setRequestHeader.mock.calls.length).toBe(2);
-      expect(xhr.send.mock.calls.length).toBe(1);
-      expect(xhr.send.mock.calls[0][0]).toBe(undefined);
-      expect(result).toStrictEqual(undefined);
-      expect(error.status).toBe(400);
-      expect(error.message).toBe('bad');
+      expect(testApi.get('/path')).rejects.toMatch('bad');
     });
 
     it('makes POST requests', async () => {
-      const xhr = mockXhr(true, true, false, false);
+      const response = { ok: 1 };
+      axios.post.mockResolvedValue(response);
 
-      const result = await testApi.post('/path?ok=da', { d: 1 }, { p: 3 });
+      const result = await testApi.post('/path2', { a: 'b' });
 
-      expect(xhr.open.mock.calls.length).toBe(1);
-      expect(xhr.open.mock.calls[0][0]).toBe('POST');
-      expect(xhr.open.mock.calls[0][1]).toBe('base/path?ok=da&p=3');
-      expect(xhr.open.mock.calls[0][2]).toBe(true);
-      expect(xhr.setRequestHeader.mock.calls.length).toBe(2);
-      expect(xhr.send.mock.calls.length).toBe(1);
-      expect(xhr.send.mock.calls[0][0]).toBe(JSON.stringify({ d: 1 }));
-      expect(result).toStrictEqual({ response: 'obj' });
+      expect(result).toStrictEqual(response);
+      expect(axios.post).toHaveBeenLastCalledWith(
+        '/path2',
+        {
+          baseUrl: 'http://localhost:3000',
+          data: { a: 'b' },
+          headers: {
+            'Content-type': 'application/json; charset=utf-8',
+            'auth': 'token',
+          },
+        }
+      );
     });
 
     it('makes JSON POST requests without data', async () => {
-      const xhr = mockXhr(true, true, false, false);
+      const response = { ok: 1 };
+      axios.post.mockResolvedValue(response);
 
-      const result = await testApi.post('/path?ok=da', null, { p: 3 });
+      const result = await testApi.post('/path3');
 
-      expect(xhr.open.mock.calls.length).toBe(1);
-      expect(xhr.open.mock.calls[0][0]).toBe('POST');
-      expect(xhr.open.mock.calls[0][1]).toBe('base/path?ok=da&p=3');
-      expect(xhr.open.mock.calls[0][2]).toBe(true);
-      expect(xhr.setRequestHeader.mock.calls.length).toBe(2);
-      expect(xhr.send.mock.calls.length).toBe(1);
-      expect(xhr.send.mock.calls[0][0]).toBe();
-      expect(result).toStrictEqual({ response: 'obj' });
+      expect(result).toStrictEqual(response);
+      expect(axios.post).toHaveBeenLastCalledWith(
+        '/path3',
+        {
+          baseUrl: 'http://localhost:3000',
+          data: {},
+          headers: {
+            'Content-type': 'application/json; charset=utf-8',
+            'auth': 'token',
+          },
+        }
+      );
     });
 
     it('makes PUT requests', async () => {
-      const xhr = mockXhr(false, false, false, false);
-      let result, error;
+      const response = { ok: 3 };
+      axios.put.mockResolvedValue(response);
 
-      try {
-        result = await testApi.put('/path?ok=da', { d: 1 }, { p: 3 });
-      } catch (err) {
-        error = err;
-      }
+      const result = await testApi.put('/path4', { a: 'c' });
 
-      expect(xhr.open.mock.calls.length).toBe(1);
-      expect(xhr.open.mock.calls[0][0]).toBe('PUT');
-      expect(xhr.open.mock.calls[0][1]).toBe('base/path?ok=da&p=3');
-      expect(xhr.open.mock.calls[0][2]).toBe(true);
-      expect(xhr.setRequestHeader.mock.calls.length).toBe(2);
-      expect(xhr.send.mock.calls.length).toBe(1);
-      expect(xhr.send.mock.calls[0][0]).toBe(JSON.stringify({ d: 1 }));
-      expect(result).toBe(undefined);
-      expect(error.message).toEqual({ response: 'obj' });
+      expect(result).toStrictEqual(response);
+      expect(axios.put).toHaveBeenLastCalledWith(
+        '/path4',
+        {
+          baseUrl: 'http://localhost:3000',
+          data: { a: 'c' },
+          headers: {
+            'Content-type': 'application/json; charset=utf-8',
+            'auth': 'token',
+          },
+        }
+      );
     });
 
     it('makes PATCH requests', async () => {
-      const xhr = mockXhr(false, false, false, false);
-      let result, error;
+      const response = { ok: 4 };
+      axios.patch.mockResolvedValue(response);
 
-      try {
-        result = await testApi.patch('/path?ok=da', { d: 1 }, { p: 3 });
-      } catch (err) {
-        error = err;
-      }
+      const result = await testApi.patch('/path5', { b: 'c' });
 
-      expect(xhr.open.mock.calls.length).toBe(1);
-      expect(xhr.open.mock.calls[0][0]).toBe('PATCH');
-      expect(xhr.open.mock.calls[0][1]).toBe('base/path?ok=da&p=3');
-      expect(xhr.open.mock.calls[0][2]).toBe(true);
-      expect(xhr.setRequestHeader.mock.calls.length).toBe(2);
-      expect(xhr.send.mock.calls.length).toBe(1);
-      expect(xhr.send.mock.calls[0][0]).toBe(JSON.stringify({ d: 1 }));
-      expect(result).toBe(undefined);
-      expect(error.message).toEqual({ response: 'obj' });
+      expect(result).toStrictEqual(response);
+      expect(axios.patch).toHaveBeenLastCalledWith(
+        '/path5',
+        {
+          baseUrl: 'http://localhost:3000',
+          data: { b: 'c' },
+          headers: {
+            'Content-type': 'application/json; charset=utf-8',
+            'auth': 'token',
+          },
+        }
+      );
     });
 
     it('makes DELETE requests', async () => {
-      const xhr = mockXhr(true, false, false, false);
+      const response = { ok: 5 };
+      axios.delete.mockResolvedValue(response);
 
-      const result = await testApi.remove('/path');
+      const result = await testApi.remove('/path6');
 
-      expect(xhr.open.mock.calls.length).toBe(1);
-      expect(xhr.open.mock.calls[0][0]).toBe('DELETE');
-      expect(xhr.open.mock.calls[0][1]).toBe('base/path');
-      expect(xhr.open.mock.calls[0][2]).toBe(true);
-      expect(xhr.setRequestHeader.mock.calls.length).toBe(2);
-      expect(xhr.send.mock.calls.length).toBe(1);
-      expect(xhr.send.mock.calls[0][0]).toBe(undefined);
-      expect(result).toStrictEqual({ response: 'obj' });
+      expect(result).toStrictEqual(response);
+      expect(axios.delete).toHaveBeenLastCalledWith(
+        '/path6',
+        {
+          baseUrl: 'http://localhost:3000',
+          data: undefined,
+          headers: {
+            'Content-type': 'application/json; charset=utf-8',
+            'auth': 'token',
+          },
+        }
+      );
     });
 
     it('makes form data requests', async () => {
-      const xhr = mockXhr(true, true, false, false);
+      const response = { ok: 5 };
+      axios.post.mockResolvedValue(response);
 
-      const result = await testApi.post(
-        '/path?ok=da',
-        { d: 1 },
-        { p: 3 },
-        contentTypes.FORM_DATA
+      const result = await testApi
+        .post('/path7', { f: 'd' }, undefined, contentTypes.FORM_DATA);
+
+      const lastCall = axios.post.mock.calls[axios.post.mock.calls.length - 1];
+
+      expect(result).toStrictEqual(response);
+      expect(typeof lastCall[1].transformRequest[0]).toBe('function');
+      expect(lastCall[1].headers).toStrictEqual(
+        {
+          'Content-type': 'multipart/form-data',
+          'auth': 'token',
+        },
       );
 
-      const formDataBody = new FormData();
-      formDataBody.append('d', 1);
+      const formData = lastCall[1].transformRequest[0]({ f: 'd' });
+      expect(formData instanceof FormData).toBe(true);
+      expect(formData.get('f')).toBe('d');
 
-      expect(xhr.open.mock.calls.length).toBe(1);
-      expect(xhr.open.mock.calls[0][0]).toBe('POST');
-      expect(xhr.open.mock.calls[0][1]).toBe('base/path?ok=da&p=3');
-      expect(xhr.open.mock.calls[0][2]).toBe(true);
-      expect(xhr.setRequestHeader.mock.calls.length).toBe(2);
-      expect(xhr.send.mock.calls.length).toBe(1);
-      expect(xhr.send.mock.calls[0][0]).toStrictEqual(formDataBody);
-      expect(result).toStrictEqual({ response: 'obj' });
-    });
-
-    it('throws when form data request body is not an object', async () => {
-      const xhr = mockXhr(true, true, false, false);
-
-      await expect(testApi.post(
-        '/path?ok=da',
-        'invalid',
-        { p: 3 },
-        contentTypes.FORM_DATA
-      )).rejects
-        .toThrow('[Snowbox API] data must be object');
-
-      expect(xhr.send.mock.calls.length).toBe(0);
+      expect(() => {
+        lastCall[1].transformRequest[0](null)
+      }).toThrow();
+      expect(() => {
+        lastCall[1].transformRequest[0](123)
+      }).toThrow();
     });
 
     it('throws an error when the content type is invalid', async () => {
-      const xhr = mockXhr(true, true, false, false);
-
-      await expect(testApi.post(
-        '/path?ok=no',
-        { d: 1 },
-        { p: 3 },
-        'invalid content type'
-      )).rejects
-        .toThrow(`[Snowbox API] Invalid content type "invalid content type"`);
-
-      expect(xhr.send.mock.calls.length).toBe(0);
+      try {
+        await testApi.post('/path', null, null, null);
+      } catch (error) {
+        expect(error.message).toBe('[Snowbox API] Invalid content type "null"');
+      }
     });
 
     it('makes requests when the auth token is not defined', async () => {
-      const testApiNoAuth = api({ baseUrl: 'base' });
-      const xhr = mockXhr(true, true, true, false);
+      const response = { ok: true };
+      axios.get.mockResolvedValue(response);
 
-      const result = await testApiNoAuth.get('/path');
+      const result = await api({ baseUrl: 'http://localhost:3000' }).get('/ok');
 
-      expect(xhr.open.mock.calls.length).toBe(1);
-      expect(xhr.open.mock.calls[0][0]).toBe('GET');
-      expect(xhr.open.mock.calls[0][1]).toBe('base/path');
-      expect(xhr.open.mock.calls[0][2]).toBe(true);
-      expect(xhr.setRequestHeader.mock.calls.length).toBe(1);
-      expect(xhr.setRequestHeader.mock.calls[0][0]).toBe('Content-type');
-      expect(xhr.setRequestHeader.mock.calls[0][1])
-        .toBe('application/json; charset=utf-8');
-      expect(xhr.send.mock.calls.length).toBe(1);
-      expect(xhr.send.mock.calls[0][0]).toBe(undefined);
-      expect(result).toStrictEqual({ response: 'obj', data: { body: 'here' } });
+      expect(result).toStrictEqual(response);
+      expect(axios.get).toHaveBeenLastCalledWith(
+        '/ok',
+        {
+          baseUrl: 'http://localhost:3000',
+          data: undefined,
+          headers: {
+            'Content-type': 'application/json; charset=utf-8',
+          },
+        }
+      );
     });
   });
 });

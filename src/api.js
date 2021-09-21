@@ -1,60 +1,25 @@
+import axios from 'axios';
 import queryString from 'query-string';
 
 import { contentTypes } from './constants';
 
-const buildUrl = (baseUrl, path, params) => {
-  const sep = path.indexOf('?') > -1 ? '&' : '?';
-  const qs = typeof params === 'object' ?
-    sep + queryString.stringify(params) :
-    '';
-
-  return `${baseUrl}${path}${qs}`;
-};
-
-const setContentTypeHeader = (xhr, contentType) => {
+const getContentTypeHeader = (contentType) => {
   switch (contentType) {
     case contentTypes.JSON:
-      return xhr.setRequestHeader(
-        'Content-type',
-        'application/json; charset=utf-8'
-      );
+      return { 'Content-type': 'application/json; charset=utf-8' };
     case contentTypes.FORM_DATA:
-      return xhr.setRequestHeader('Content-type', 'multipart/form-data');
+      return { 'Content-type': 'multipart/form-data' };
     default:
       throw new Error(`[Snowbox API] Invalid content type "${contentType}"`)
   }
 };
 
-const setAuthHeader = (xhr, tokenHeader, getAuthToken) => {
+const getAuthHeader = async (tokenHeader, getAuthToken) => {
   if (tokenHeader && getAuthToken) {
-    xhr.setRequestHeader(tokenHeader, getAuthToken());
-  }
-};
-
-const buildBody = (data, contentType) => {
-  if (!data) {
-    return undefined;
+    return { [tokenHeader]: await getAuthToken() };
   }
 
-  switch (contentType) {
-    case contentTypes.JSON:
-      if (data) {
-        return JSON.stringify(data);
-      }
-
-      return null;
-    case contentTypes.FORM_DATA:
-      if (typeof data !== 'object') {
-        throw new Error('[Snowbox API] data must be object');
-      }
-
-      const body = new FormData();
-      Object.keys(data).forEach(field => body.append(field, data[field]));
-
-      return body;
-    default:
-      throw new Error('[Snowbox API] Invalid conte type');
-  }
+  return {};
 };
 
 const validateBaseUrl = (providedOptions) => {
@@ -89,67 +54,58 @@ const api = (providedOptions = {}) => {
 
   const options = setupOptions(providedOptions);
 
-  const get = (path, params) => request('GET', path, params);
+  const get = (path, params) => request('get', path, params);
 
   const post = (path, data = {}, params, contentType) => request(
-    'POST', path, params, data, contentType
+    'post', path, params, data, contentType
   );
 
   const put = (path, data = {}, params, contentType) => request(
-    'PUT', path, params, data, contentType
+    'put', path, params, data, contentType
   );
 
   const patch = (path, data = {}, params, contentType) => request(
-    'PATCH', path, params, data, contentType
+    'patch', path, params, data, contentType
   );
 
-  const remove = (path) => request('DELETE', path);
+  const remove = (path) => request('delete', path);
 
-  const request = (
+  const request = async (
     method,
     path,
     params,
     data,
     contentType = contentTypes.JSON
-  ) => new Promise(async (resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-
-    xhr.open(method, buildUrl(options.baseUrl, path, params), true);
-
-    xhr.onload = () => {
-      if (xhr.readyState !== 4) {
-        return false;
-      }
-
-      let response;
-      try {
-        response = JSON.parse(xhr.responseText);
-      } catch (err) {
-        response = xhr.responseText;
-      }
-
-      if (xhr.status >= 200 && xhr.status < 300) {
-        resolve(response);
-      } else {
-        reject({
-          status: xhr.status,
-          message: response.message || response
-        });
-      }
+  ) => {
+    const authHeader = await getAuthHeader(
+      options.tokenHeader,
+      options.getAuthToken
+    );
+    const requestConfig = {
+      baseUrl: options.baseUrl,
+      params,
+      data,
+      headers: {
+        ...getContentTypeHeader(contentType),
+        ...authHeader,
+      },
     };
 
-    let body;
+    if (contentType === contentTypes.FORM_DATA) {
+      requestConfig.transformRequest = [(data) => {
+        if (!data || typeof data !== 'object') {
+          throw new Error('[Snowbox API] data must be object');
+        }
 
-    try {
-      setContentTypeHeader(xhr, contentType);
-      setAuthHeader(xhr, options.tokenHeader, options.getAuthToken);
-      body = buildBody(data, contentType);
-    } catch (error) {
-      return reject(error);
+        const body = new FormData();
+        Object.keys(data).forEach(field => body.append(field, data[field]));
+
+        return body;
+      }];
     }
 
-    xhr.send(body);
-  });
+    return axios[method](path, requestConfig);
+  };
 
   return {
     get,

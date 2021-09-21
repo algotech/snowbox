@@ -34,6 +34,7 @@
   },
   "homepage": "https://github.com/algotech/snowbox#readme",
   "dependencies": {
+    "axios": "^0.21.4",
     "hoist-non-react-statics": "^3.3.2",
     "immer": "^9.0.3",
     "lodash": "^4.17.21",
