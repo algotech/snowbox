@@ -30,7 +30,6 @@ Snowbox is a small collection of tools that hide the repetitiveness in your code
 	- [selectors](#selectors)
 	- [Hooks](#hooks)
 	- [Constants](#constants)
-	- [Form](#form)
 - [Exmples](#examples)
 
 # Install
@@ -112,11 +111,11 @@ const todosSelector = selectCollection(todo); // Create the selector for todos
 export default function MyTodos({ filter }) {
 	const dispatch = useDispatch();
 	const todos = useSelector(todosSelector); // Select your todos
-	
+
 	useEffect(() => {
 		dispatch(fetch(todo)(filter)); // Request todos
 	}, [dispatch, fetch, todo, filter]);
-	
+
 	return todos.map(item => <Todo key={item.id} todo={item} />);
 }
 ```
@@ -130,7 +129,7 @@ export default function MyTodos({ filter }) {
 	- `getAuthToken`: _function_ Returns the authentication token. **required** when `tokenHeader` si defined.
 
 #### Api methods:
-- ##### `get(path, params)` 
+- ##### `get(path, params)`
   Makes a GET HTTP request and returns the response.
 
   Params:
@@ -142,52 +141,52 @@ export default function MyTodos({ filter }) {
 
 - ##### `post(path, data = {}, params, contentType)`
   Makes a POST HTTP request and returns the `serverResponse`.
-  
+
   Params:
 	- `path`: _string_ **required** Together with `options.baseUrl` it forms the destination url.
 	- `data`: _object_ The body of the request.
 	- `params`: _object_ The query params of the request.
 	- `contentType`: _string_ The content type of the request.
-  
+
   Returns:
 	- `object` Server response.
 
-- ##### `put(path, data = {}, params, contentType)`: 
+- ##### `put(path, data = {}, params, contentType)`:
   Makes a PUT HTTP request and returns the response.
-  
+
   Params:
 	- `path`: _string_ **required** Together with `options.baseUrl` it forms the destination url.
 	- `data`: _object_ The body of the request.
 	- `params`: _object_ The query params of the request.
 	- `contentType`: _string_ The content type of the request.
-  
+
   Returns:
 	- `object` Server response.
 
-- ##### `patch(path, data = {}, params, contentType)`: 
+- ##### `patch(path, data = {}, params, contentType)`:
   Makes a PATCH HTTP request and returns the response.
-  
+
   Params:
 	- `path`: _string_ **required** Together with `options.baseUrl` it forms the destination url.
 	- `data`: _object_ The body of the request.
 	- `params`: _object_ The query params of the request.
 	- `contentType`: _string_ The content type of the request.
-  
+
   Returns:
 	- `object` Server response.
 
-- ##### `remove(path)`: 
+- ##### `remove(path)`:
   Makes a DELETE HTTP request and returns the response.
-  
+
   Params:
 	- `path`: _string_ **required** Together with `options.baseUrl` it forms the destination url.
 
   Returns:
 	- `object` Server response.
 
-- ##### `request(method, path, params, data, contentType)`: 
+- ##### `request(method, path, params, data, contentType)`:
   Makes a HTTP request and returns `serverResponse`. It is the function called by all the other `api` functions.
-  
+
   Params:
 	- `method`: _string_ **required** The HTTP method of the request.
 	- `path`: _string_ **required** Together with `options.baseUrl` it forms the destination url.
@@ -200,7 +199,7 @@ export default function MyTodos({ filter }) {
 
 ### provider(api)(options)
 - `api`: _object_ **required** The `api` service that will make the HTTP requests.
-- `options`: _object_ 
+- `options`: _object_
 	- `particle`: _string_ **required** The resource name in a RESTful HTTP request (e.g. the `todos` in `http://localhost:3000/api/todos/9`).
 	- `idField`: _string_ The field where the unique ID for each of this entity can be found. Defaults to `'id'`.
 	- `entityPath`: _string_ The path where the entity data is found in non `fetch` responses. Uses `lodash.get` behind the scenes. Defaults to `'data'`.
@@ -235,27 +234,27 @@ export default function MyTodos({ filter }) {
 
 #### Provider methods:
 
-- ##### `find(filter)`: 
+- ##### `find(filter)`:
   Calls `[GET] <api.options.baseUrl/options.findPath?options.findParams` and returns `Response`.
-  
+
   Params:
 	- `filter`: _object_ The filter for the requested resource.
-	
+
   Returns:
-	- `Response` 
-  
-- ##### `fetch(filter)`: 
+	- `Response`
+
+- ##### `fetch(filter)`:
   Calls `[GET] api.options.baseUrl/options.fetchPath?options.fetchParams` and returns `Response`.
-  
+
   Params:
 	- `filter`: _object_ The filter for the requested resources.
 
   Returns:
 	- `Response`
 
-- ##### `upsert(data, params)`: 
+- ##### `upsert(data, params)`:
   Calls `[options.upsertMethod] api.options.baseUrl/options.upsertPath?params` and returns `Response`.
-  
+
   Params:
 	- `data`: _object_ The body of the request.
 	- `params`: _object_ The HTTP query params.
@@ -263,9 +262,9 @@ export default function MyTodos({ filter }) {
   Returns:
 	- `Response`
 
-- ##### `remove(data)`: 
+- ##### `remove(data)`:
   Calls `[options.removeMethod] api.options.baseUrl/options.removePath` and returns `Response`.
-  
+
   Params:
 	- `data`: _object_ Usually the deleted resource.
 
@@ -289,8 +288,8 @@ export default function MyTodos({ filter }) {
 - `original`: _object_ Returns the `serverResponse`.
 - `converted`: _object_ When the request is not `fetch` it returns `response.data`. When the request is `fetch` it returns:
 ```
-{ 
-   <options.entitiesFieldName>: serverResponse[options.entitiesPath], 
+{
+   <options.entitiesFieldName>: serverResponse[options.entitiesPath],
    <options.metaFieldName>: serverResponse[options.metaPath],
 }
 ```
@@ -312,8 +311,8 @@ export default function MyTodos({ filter }) {
 	- `meta`: _object_
 		- `refresh`: _boolean_ Force the request for fresh data even when the state is not stale. Defaults to `false`.
 - `upsert(entity)(payload, meta = {})`: Sends a create or update request to the remote server and populates the state with the result.
-- `remove(entity)(payload, meta = {})`: Sends a delete request to the remote server and populates the state with the result. 
-- `clearAll(payload)`: Clears the entire snowbox state. Useful when the user logs out. 
+- `remove(entity)(payload, meta = {})`: Sends a delete request to the remote server and populates the state with the result.
+- `clearAll(payload)`: Clears the entire snowbox state. Useful when the user logs out.
 
 ### selectors
 - `selectOne(entity, hydrationLevels = 0, idField)(state, props)`:  Selects the entity record that has the ID equal to `props[idField || entity.idField]`.
@@ -337,7 +336,7 @@ export default function MyTodos({ filter }) {
 	- `filter`: _object_ **required** The filter used for selecting the collection.
 
 ### Hooks
-- #### `useList(entity, initialFilters = {})`: 
+- #### `useList(entity, initialFilters = {})`:
 	- `entity`: _object_ **required** An `Entity`.
 	- `initialFilters`: _object_ The initial filters for the list. Defaults to `{}`.
 
@@ -357,7 +356,7 @@ export default function MyTodos({ filter }) {
 ### Constants
 
 - #### contentTypes
-	- `JSON`: 
+	- `JSON`:
 	- `FORM_DATA`
 
 - #### actions
@@ -371,14 +370,3 @@ export default function MyTodos({ filter }) {
 	- `PENDING`
 	- `SUCCEEDED`
 	- `FAILED`
-
-### Form 
-!!! __Deprecated__ and will be removed.
-
-- #### `withForm({ fields, submitForm, initialValues })` HOC
-	- `fields`: _object_ **required** An object with the form fields and the validation rules (processed by [validate.js](http://validatejs.org)).
-	- `submitForm(ownProps, formData, setServerErrors)`: _function_ Will be called when the form is submitted
-		- `ownProps`: _object_
-		- `formData`: _object_
-		- `setServerErrors`: _function_
-	- `initialValues`: _object_

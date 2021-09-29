@@ -1,5 +1,4 @@
 import axios from 'axios';
-import queryString from 'query-string';
 
 import { contentTypes } from './constants';
 

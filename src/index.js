@@ -7,4 +7,3 @@ export { snowboxMiddleware } from './middleware';
 export { default as provider } from './provider';
 export { snowboxReducer } from './reducers';
 export { selectOne, selectCollection, selectMeta, selectAll } from './selectors';
-export { default as withForm } from './withForm';

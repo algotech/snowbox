@@ -1,6 +1,6 @@
 {
   "name": "snowbox",
-  "version": "0.3.1",
+  "version": "0.5.3",
   "description": "Use snowbox for a quick start with redux",
   "main": "dist/snowbox.js",
   "module": "dist/snowbox.js.es",
@@ -35,15 +35,11 @@
   "homepage": "https://github.com/algotech/snowbox#readme",
   "dependencies": {
     "axios": "^0.21.4",
-    "hoist-non-react-statics": "^3.3.2",
     "immer": "^9.0.3",
     "lodash": "^4.17.21",
     "normalizr": "^3.6.0",
-    "query-string": "^6.13.5",
     "redux": "^4.0.5",
-    "redux-thunk": "^2.3.0",
-    "reselect": "^4.0.0",
-    "validate.js": "^0.13.1"
+    "reselect": "^4.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.11.6",
