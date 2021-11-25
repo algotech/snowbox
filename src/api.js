@@ -81,7 +81,7 @@ const api = (providedOptions = {}) => {
       options.getAuthToken
     );
     const requestConfig = {
-      baseUrl: options.baseUrl,
+      baseURL: options.baseUrl,
       params,
       data,
       headers: {
@@ -103,7 +103,9 @@ const api = (providedOptions = {}) => {
       }];
     }
 
-    return axios[method](path, requestConfig);
+    const axiosInstance = axios.create(requestConfig);
+
+    return axiosInstance[method](path);
   };
 
   return {

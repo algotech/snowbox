@@ -71,6 +71,8 @@ describe('api', () => {
     let testApi;
 
     beforeAll(() => {
+      axios.create.mockReturnThis();
+
       testApi = api({
         baseUrl: 'http://localhost:3000',
         tokenHeader: 'auth',
@@ -85,17 +87,7 @@ describe('api', () => {
       const result = await testApi.get('/path1');
 
       expect(result).toStrictEqual(response);
-      expect(axios.get).toHaveBeenLastCalledWith(
-        '/path1',
-        {
-          baseUrl: 'http://localhost:3000',
-          data: undefined,
-          headers: {
-            'Content-type': 'application/json; charset=utf-8',
-            'auth': 'token',
-          },
-        }
-      );
+      expect(axios.get).toHaveBeenLastCalledWith('/path1');
     });
 
     it('throws then the api responds with an error', async () => {
@@ -111,17 +103,7 @@ describe('api', () => {
       const result = await testApi.post('/path2', { a: 'b' });
 
       expect(result).toStrictEqual(response);
-      expect(axios.post).toHaveBeenLastCalledWith(
-        '/path2',
-        {
-          baseUrl: 'http://localhost:3000',
-          data: { a: 'b' },
-          headers: {
-            'Content-type': 'application/json; charset=utf-8',
-            'auth': 'token',
-          },
-        }
-      );
+      expect(axios.post).toHaveBeenLastCalledWith('/path2');
     });
 
     it('makes JSON POST requests without data', async () => {
@@ -131,17 +113,7 @@ describe('api', () => {
       const result = await testApi.post('/path3');
 
       expect(result).toStrictEqual(response);
-      expect(axios.post).toHaveBeenLastCalledWith(
-        '/path3',
-        {
-          baseUrl: 'http://localhost:3000',
-          data: {},
-          headers: {
-            'Content-type': 'application/json; charset=utf-8',
-            'auth': 'token',
-          },
-        }
-      );
+      expect(axios.post).toHaveBeenLastCalledWith('/path3');
     });
 
     it('makes PUT requests', async () => {
@@ -151,17 +123,7 @@ describe('api', () => {
       const result = await testApi.put('/path4', { a: 'c' });
 
       expect(result).toStrictEqual(response);
-      expect(axios.put).toHaveBeenLastCalledWith(
-        '/path4',
-        {
-          baseUrl: 'http://localhost:3000',
-          data: { a: 'c' },
-          headers: {
-            'Content-type': 'application/json; charset=utf-8',
-            'auth': 'token',
-          },
-        }
-      );
+      expect(axios.put).toHaveBeenLastCalledWith('/path4');
     });
 
     it('makes PATCH requests', async () => {
@@ -171,17 +133,7 @@ describe('api', () => {
       const result = await testApi.patch('/path5', { b: 'c' });
 
       expect(result).toStrictEqual(response);
-      expect(axios.patch).toHaveBeenLastCalledWith(
-        '/path5',
-        {
-          baseUrl: 'http://localhost:3000',
-          data: { b: 'c' },
-          headers: {
-            'Content-type': 'application/json; charset=utf-8',
-            'auth': 'token',
-          },
-        }
-      );
+      expect(axios.patch).toHaveBeenLastCalledWith('/path5');
     });
 
     it('makes DELETE requests', async () => {
@@ -191,17 +143,7 @@ describe('api', () => {
       const result = await testApi.remove('/path6');
 
       expect(result).toStrictEqual(response);
-      expect(axios.delete).toHaveBeenLastCalledWith(
-        '/path6',
-        {
-          baseUrl: 'http://localhost:3000',
-          data: undefined,
-          headers: {
-            'Content-type': 'application/json; charset=utf-8',
-            'auth': 'token',
-          },
-        }
-      );
+      expect(axios.delete).toHaveBeenLastCalledWith('/path6');
     });
 
     it('makes form data requests', async () => {
@@ -211,26 +153,26 @@ describe('api', () => {
       const result = await testApi
         .post('/path7', { f: 'd' }, undefined, contentTypes.FORM_DATA);
 
-      const lastCall = axios.post.mock.calls[axios.post.mock.calls.length - 1];
+      const lastCall = axios.create.mock.calls[axios.create.mock.calls.length - 1];
 
       expect(result).toStrictEqual(response);
-      expect(typeof lastCall[1].transformRequest[0]).toBe('function');
-      expect(lastCall[1].headers).toStrictEqual(
+      expect(typeof lastCall[0].transformRequest[0]).toBe('function');
+      expect(lastCall[0].headers).toStrictEqual(
         {
           'Content-type': 'multipart/form-data',
           'auth': 'token',
         },
       );
 
-      const formData = lastCall[1].transformRequest[0]({ f: 'd' });
+      const formData = lastCall[0].transformRequest[0]({ f: 'd' });
       expect(formData instanceof FormData).toBe(true);
       expect(formData.get('f')).toBe('d');
 
       expect(() => {
-        lastCall[1].transformRequest[0](null)
+        lastCall[0].transformRequest[0](null)
       }).toThrow();
       expect(() => {
-        lastCall[1].transformRequest[0](123)
+        lastCall[0].transformRequest[0](123)
       }).toThrow();
     });
 
@@ -244,21 +186,13 @@ describe('api', () => {
 
     it('makes requests when the auth token is not defined', async () => {
       const response = { ok: true };
+
       axios.get.mockResolvedValue(response);
 
       const result = await api({ baseUrl: 'http://localhost:3000' }).get('/ok');
 
       expect(result).toStrictEqual(response);
-      expect(axios.get).toHaveBeenLastCalledWith(
-        '/ok',
-        {
-          baseUrl: 'http://localhost:3000',
-          data: undefined,
-          headers: {
-            'Content-type': 'application/json; charset=utf-8',
-          },
-        }
-      );
+      expect(axios.get).toHaveBeenLastCalledWith('/ok');
     });
   });
 });
