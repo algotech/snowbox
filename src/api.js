@@ -52,6 +52,8 @@ const api = (providedOptions = {}) => {
   validateAuthOptions(providedOptions);
 
   const options = setupOptions(providedOptions);
+  
+  const axiosInstance = axios.create({ baseURL: options.baseUrl });
 
   const get = (path, params) => request('get', path, params);
 
@@ -81,7 +83,6 @@ const api = (providedOptions = {}) => {
       options.getAuthToken
     );
     const requestConfig = {
-      baseURL: options.baseUrl,
       params,
       data,
       headers: {
@@ -103,9 +104,7 @@ const api = (providedOptions = {}) => {
       }];
     }
 
-    const axiosInstance = axios.create(requestConfig);
-
-    return axiosInstance[method](path);
+    return axiosInstance[method](path, requestConfig);
   };
 
   return {

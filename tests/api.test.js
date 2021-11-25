@@ -87,7 +87,16 @@ describe('api', () => {
       const result = await testApi.get('/path1');
 
       expect(result).toStrictEqual(response);
-      expect(axios.get).toHaveBeenLastCalledWith('/path1');
+      expect(axios.get).toHaveBeenLastCalledWith(
+        '/path1',
+        {
+          data: undefined,
+          headers: {
+            'Content-type': 'application/json; charset=utf-8',
+            'auth': 'token',
+          },
+        }
+      );
     });
 
     it('throws then the api responds with an error', async () => {
@@ -103,7 +112,16 @@ describe('api', () => {
       const result = await testApi.post('/path2', { a: 'b' });
 
       expect(result).toStrictEqual(response);
-      expect(axios.post).toHaveBeenLastCalledWith('/path2');
+      expect(axios.post).toHaveBeenLastCalledWith(
+        '/path2',
+        {
+          data: { a: 'b' },
+          headers: {
+            'Content-type': 'application/json; charset=utf-8',
+            'auth': 'token',
+          },
+        }
+      );
     });
 
     it('makes JSON POST requests without data', async () => {
@@ -113,7 +131,16 @@ describe('api', () => {
       const result = await testApi.post('/path3');
 
       expect(result).toStrictEqual(response);
-      expect(axios.post).toHaveBeenLastCalledWith('/path3');
+      expect(axios.post).toHaveBeenLastCalledWith(
+        '/path3',
+        {
+          data: {},
+          headers: {
+            'Content-type': 'application/json; charset=utf-8',
+            'auth': 'token',
+          },
+        }
+      );
     });
 
     it('makes PUT requests', async () => {
@@ -123,7 +150,16 @@ describe('api', () => {
       const result = await testApi.put('/path4', { a: 'c' });
 
       expect(result).toStrictEqual(response);
-      expect(axios.put).toHaveBeenLastCalledWith('/path4');
+      expect(axios.put).toHaveBeenLastCalledWith(
+        '/path4',
+        {
+          data: { a: 'c' },
+          headers: {
+            'Content-type': 'application/json; charset=utf-8',
+            'auth': 'token',
+          },
+        }
+      );
     });
 
     it('makes PATCH requests', async () => {
@@ -133,7 +169,16 @@ describe('api', () => {
       const result = await testApi.patch('/path5', { b: 'c' });
 
       expect(result).toStrictEqual(response);
-      expect(axios.patch).toHaveBeenLastCalledWith('/path5');
+      expect(axios.patch).toHaveBeenLastCalledWith(
+        '/path5',
+        {
+          data: { b: 'c' },
+          headers: {
+            'Content-type': 'application/json; charset=utf-8',
+            'auth': 'token',
+          },
+        }
+      );
     });
 
     it('makes DELETE requests', async () => {
@@ -143,7 +188,16 @@ describe('api', () => {
       const result = await testApi.remove('/path6');
 
       expect(result).toStrictEqual(response);
-      expect(axios.delete).toHaveBeenLastCalledWith('/path6');
+      expect(axios.delete).toHaveBeenLastCalledWith(
+        '/path6',
+        {
+          data: undefined,
+          headers: {
+            'Content-type': 'application/json; charset=utf-8',
+            'auth': 'token',
+          },
+        }
+      );
     });
 
     it('makes form data requests', async () => {
@@ -153,26 +207,26 @@ describe('api', () => {
       const result = await testApi
         .post('/path7', { f: 'd' }, undefined, contentTypes.FORM_DATA);
 
-      const lastCall = axios.create.mock.calls[axios.create.mock.calls.length - 1];
+      const lastCall = axios.post.mock.calls[axios.post.mock.calls.length - 1];
 
       expect(result).toStrictEqual(response);
-      expect(typeof lastCall[0].transformRequest[0]).toBe('function');
-      expect(lastCall[0].headers).toStrictEqual(
+      expect(typeof lastCall[1].transformRequest[0]).toBe('function');
+      expect(lastCall[1].headers).toStrictEqual(
         {
           'Content-type': 'multipart/form-data',
           'auth': 'token',
         },
       );
 
-      const formData = lastCall[0].transformRequest[0]({ f: 'd' });
+      const formData = lastCall[1].transformRequest[0]({ f: 'd' });
       expect(formData instanceof FormData).toBe(true);
       expect(formData.get('f')).toBe('d');
 
       expect(() => {
-        lastCall[0].transformRequest[0](null)
+        lastCall[1].transformRequest[0](null)
       }).toThrow();
       expect(() => {
-        lastCall[0].transformRequest[0](123)
+        lastCall[1].transformRequest[0](123)
       }).toThrow();
     });
 
@@ -192,7 +246,15 @@ describe('api', () => {
       const result = await api({ baseUrl: 'http://localhost:3000' }).get('/ok');
 
       expect(result).toStrictEqual(response);
-      expect(axios.get).toHaveBeenLastCalledWith('/ok');
+      expect(axios.get).toHaveBeenLastCalledWith(
+        '/ok',
+        {
+          data: undefined,
+          headers: {
+            'Content-type': 'application/json; charset=utf-8',
+          },
+        }
+      );
     });
   });
 });
