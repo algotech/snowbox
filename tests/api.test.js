@@ -71,6 +71,8 @@ describe('api', () => {
     let testApi;
 
     beforeAll(() => {
+      axios.create.mockReturnThis();
+
       testApi = api({
         baseUrl: 'http://localhost:3000',
         tokenHeader: 'auth',
@@ -88,7 +90,6 @@ describe('api', () => {
       expect(axios.get).toHaveBeenLastCalledWith(
         '/path1',
         {
-          baseUrl: 'http://localhost:3000',
           data: undefined,
           headers: {
             'Content-type': 'application/json; charset=utf-8',
@@ -114,7 +115,6 @@ describe('api', () => {
       expect(axios.post).toHaveBeenLastCalledWith(
         '/path2',
         {
-          baseUrl: 'http://localhost:3000',
           data: { a: 'b' },
           headers: {
             'Content-type': 'application/json; charset=utf-8',
@@ -134,7 +134,6 @@ describe('api', () => {
       expect(axios.post).toHaveBeenLastCalledWith(
         '/path3',
         {
-          baseUrl: 'http://localhost:3000',
           data: {},
           headers: {
             'Content-type': 'application/json; charset=utf-8',
@@ -154,7 +153,6 @@ describe('api', () => {
       expect(axios.put).toHaveBeenLastCalledWith(
         '/path4',
         {
-          baseUrl: 'http://localhost:3000',
           data: { a: 'c' },
           headers: {
             'Content-type': 'application/json; charset=utf-8',
@@ -174,7 +172,6 @@ describe('api', () => {
       expect(axios.patch).toHaveBeenLastCalledWith(
         '/path5',
         {
-          baseUrl: 'http://localhost:3000',
           data: { b: 'c' },
           headers: {
             'Content-type': 'application/json; charset=utf-8',
@@ -194,7 +191,6 @@ describe('api', () => {
       expect(axios.delete).toHaveBeenLastCalledWith(
         '/path6',
         {
-          baseUrl: 'http://localhost:3000',
           data: undefined,
           headers: {
             'Content-type': 'application/json; charset=utf-8',
@@ -244,6 +240,7 @@ describe('api', () => {
 
     it('makes requests when the auth token is not defined', async () => {
       const response = { ok: true };
+
       axios.get.mockResolvedValue(response);
 
       const result = await api({ baseUrl: 'http://localhost:3000' }).get('/ok');
@@ -252,7 +249,6 @@ describe('api', () => {
       expect(axios.get).toHaveBeenLastCalledWith(
         '/ok',
         {
-          baseUrl: 'http://localhost:3000',
           data: undefined,
           headers: {
             'Content-type': 'application/json; charset=utf-8',
