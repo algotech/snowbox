@@ -104,7 +104,11 @@ const api = (providedOptions = {}) => {
       }];
     }
 
-    return axiosInstance[method](path, requestConfig);
+    if (method === 'get' || method === 'delete') {
+      return axiosInstance[method](path, requestConfig);
+    }
+
+    return axiosInstance[method](path, data, requestConfig);
   };
 
   return {

@@ -114,6 +114,7 @@ describe('api', () => {
       expect(result).toStrictEqual(response);
       expect(axios.post).toHaveBeenLastCalledWith(
         '/path2',
+        { a: 'b' },
         {
           data: { a: 'b' },
           headers: {
@@ -133,6 +134,7 @@ describe('api', () => {
       expect(result).toStrictEqual(response);
       expect(axios.post).toHaveBeenLastCalledWith(
         '/path3',
+        {},
         {
           data: {},
           headers: {
@@ -152,6 +154,7 @@ describe('api', () => {
       expect(result).toStrictEqual(response);
       expect(axios.put).toHaveBeenLastCalledWith(
         '/path4',
+        { a: 'c' },
         {
           data: { a: 'c' },
           headers: {
@@ -171,6 +174,7 @@ describe('api', () => {
       expect(result).toStrictEqual(response);
       expect(axios.patch).toHaveBeenLastCalledWith(
         '/path5',
+        { b: 'c' },
         {
           data: { b: 'c' },
           headers: {
@@ -210,23 +214,23 @@ describe('api', () => {
       const lastCall = axios.post.mock.calls[axios.post.mock.calls.length - 1];
 
       expect(result).toStrictEqual(response);
-      expect(typeof lastCall[1].transformRequest[0]).toBe('function');
-      expect(lastCall[1].headers).toStrictEqual(
+      expect(typeof lastCall[2].transformRequest[0]).toBe('function');
+      expect(lastCall[2].headers).toStrictEqual(
         {
           'Content-type': 'multipart/form-data',
           'auth': 'token',
         },
       );
 
-      const formData = lastCall[1].transformRequest[0]({ f: 'd' });
+      const formData = lastCall[2].transformRequest[0]({ f: 'd' });
       expect(formData instanceof FormData).toBe(true);
       expect(formData.get('f')).toBe('d');
 
       expect(() => {
-        lastCall[1].transformRequest[0](null)
+        lastCall[2].transformRequest[0](null)
       }).toThrow();
       expect(() => {
-        lastCall[1].transformRequest[0](123)
+        lastCall[2].transformRequest[0](123)
       }).toThrow();
     });
 
